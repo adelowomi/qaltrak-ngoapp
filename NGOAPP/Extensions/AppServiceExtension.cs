@@ -1,5 +1,6 @@
 ﻿using NGOAPP.Services;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
 
 namespace NGOAPP;
 
@@ -10,6 +11,7 @@ public static class AppServiceExtensions
         services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         services.AddTransient<ICodeService, CodeService>();
         services.AddTransient<IPostmarkHelper, PostmarkHelper>();
+        services.AddTransient<IUserService, UserService>();
     }
 
 
@@ -24,6 +26,12 @@ public static class AppServiceExtensions
                 options.UseMySql(_appSettings.ConnectionString, MySqlServerVersion.AutoDetect(_appSettings.ConnectionString), b => b.MigrationsAssembly(assembly)).UseCamelCaseNamingConvention();
                 options.UseOpenIddict<int>();
             });
+
+        services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseInMemoryStorage());
 
         // add utilities to the service container
 
@@ -47,6 +55,11 @@ public static class AppServiceExtensions
         {
             x.AddSwaggerAuthOptions();
             x.OperationFilter<SwaggerHeaderFilter>();
+        });
+        
+        services.AddMvc(options =>
+        {
+            options.Filters.Add<LinkRewritingFilter>();
         });
     }
 }

@@ -30,7 +30,7 @@ public static class IdentityExtensions
             .Bind(configuration.GetSection(nameof(IdentityConfig)))
             .ValidateDataAnnotations();
 
-        services.AddSingleton<IEmailSender<User>, IdentityEmailSender>();
+        services.AddTransient<IEmailSender<User>, IdentityEmailSender>();
     }
 
     public static void MapIdentityEndpoints(this IEndpointRouteBuilder endpointBuilder)

@@ -1,4 +1,5 @@
-﻿using NGOAPP;
+﻿using Hangfire;
+using NGOAPP;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseHangfireDashboard("/fire");
+app.UseHangfireServer();
 
 app.UseHttpsRedirection();
 
