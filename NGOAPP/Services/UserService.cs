@@ -51,11 +51,34 @@ public class UserService : IUserService
         return StandardResponse<UserView>.Ok(verifiedUser);
     }
 
+    public async Task<StandardResponse<bool>> ResetPasswordAsyncMobile(ResetPasswordModel model)
+    {
+        var codeData = _codeService.GetCode(model.ResetCode);
+        if (codeData == null)
+            return StandardResponse<bool>.Error("Invalid code");
+
+        var userId = codeData.Description.Split("|")[0];
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return StandardResponse<bool>.Error("User not found");
+
+        var originalCode = codeData.Description.Split("|")[2];
+        if (originalCode == null)
+            return StandardResponse<bool>.Error("Invalid code");
+
+        var resetPasswordResponse = await _userManager.ResetPasswordAsync(user, originalCode, model.NewPassword);
+        if (!resetPasswordResponse.Succeeded)
+            return StandardResponse<bool>.Error(message: resetPasswordResponse.Errors.FirstOrDefault().Description);
+
+        return StandardResponse<bool>.Ok(true);
+
+    }
+
 
 
 
     #region SendEmails for account confirmation and password reset
-    public Task SendConfirmationLinkAsync(User user, string email, string confirmationLink,bool isMobile)
+    public async Task SendConfirmationLinkAsync(User user, string email, string confirmationLink, bool isMobile)
     {
         var link = $"{_appSettings.FrontEndUrl}/confirm-email?{confirmationLink.Split("?")[1]}";
 
@@ -68,18 +91,20 @@ public class UserService : IUserService
         // if this is a mobile request, send a code instead of a link
         if (isMobile)
         {
+            // generate confirm email token for user
+            var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             // combine userId with original code + tyoe
-            var description = $"{user.Id}|{CodeType.EmailConfirmation}|{confirmationLink.Split("code=")[1]}";
+            var description = $"{user.Id}|{CodeType.EmailConfirmation}|{confirmationToken}";
             var code = _codeService.GenerateCode(description, 6,numberOnly: true);
             templateModel.Add("code", code);
-            return _postmarkHelper.SendTemplatedEmail(EmailTemplates.UserRegistrationTemplateMobile, email, templateModel);
+            await _postmarkHelper.SendTemplatedEmail(EmailTemplates.UserRegistrationTemplateMobile, email, templateModel);
         }
 
-        return _postmarkHelper.SendTemplatedEmail(EmailTemplates.UserRegistrationTemplate, email, templateModel);
+        await  _postmarkHelper.SendTemplatedEmail(EmailTemplates.UserRegistrationTemplate, email, templateModel);
     }
 
 
-    public Task SendPasswordResetCodeAsync(User user, string email, string resetCode)
+    public async Task SendPasswordResetCodeAsync(User user, string email, string resetCode)
     {
         // check if this is a mobile request
         var isMobile = _httpContextAccessor.IsMobileRequest();
@@ -93,13 +118,14 @@ public class UserService : IUserService
         // if this is a mobile request, send a code instead of a link
         if (isMobile)
         {
+            var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             // combine userId with original code + tyoe
-            var description = $"{user.Id}|{CodeType.PasswordReset}|{resetCode}";
+            var description = $"{user.Id}|{CodeType.PasswordReset}|{passwordResetToken}";
             var code = _codeService.GenerateCode(description, 6,numberOnly: true);
-            return _postmarkHelper.SendTemplatedEmail(EmailTemplates.PasswordResetTemplateMobile, email, templateModel);
+            await _postmarkHelper.SendTemplatedEmail(EmailTemplates.PasswordResetTemplateMobile, email, templateModel);
         }
 
-        return _postmarkHelper.SendTemplatedEmail(EmailTemplates.PasswordResetTemplate, email, templateModel);
+        await _postmarkHelper.SendTemplatedEmail(EmailTemplates.PasswordResetTemplate, email, templateModel);
     }
 
 
