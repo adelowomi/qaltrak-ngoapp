@@ -23,5 +23,6 @@ public class LocationTypeSeeder
                 _context.LocationTypes.Add(locationType);
             }
         }
+        _context.SaveChanges();
     }
 }

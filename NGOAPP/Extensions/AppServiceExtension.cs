@@ -12,6 +12,7 @@ public static class AppServiceExtensions
         services.AddTransient<ICodeService, CodeService>();
         services.AddTransient<IPostmarkHelper, PostmarkHelper>();
         services.AddTransient<IUserService, UserService>();
+        services.AddTransient<IUtilityService, UtilityService>();
     }
 
 

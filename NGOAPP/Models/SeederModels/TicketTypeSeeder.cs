@@ -23,5 +23,6 @@ public class TicketTypeSeeder
                 _context.TicketTypes.Add(ticketType);
             }
         }
+        _context.SaveChanges();
     }
 }
