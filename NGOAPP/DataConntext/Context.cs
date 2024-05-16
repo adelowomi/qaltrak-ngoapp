@@ -23,4 +23,10 @@ public class Context : IdentityDbContext<User, Role, Guid>
     }
 
     public DbSet<Code> Codes { get; set; }
+    public DbSet<EventCategory> EventCategories { get; set; }
+    public DbSet<EventSubCategory> EventSubCategories { get; set; }
+    public DbSet<EventType> EventTypes { get; set; }
+    public DbSet<Status> Statuses { get; set; }
+    public DbSet<LocationType> LocationTypes { get; set; }
+    public DbSet<TicketType> TicketTypes { get; set; }
 }

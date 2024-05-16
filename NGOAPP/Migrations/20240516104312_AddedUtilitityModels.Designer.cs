@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NGOAPP;
 
@@ -11,9 +12,11 @@ using NGOAPP;
 namespace NGOAPP.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240516104312_AddedUtilitityModels")]
+    partial class AddedUtilitityModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -168,6 +171,7 @@ namespace NGOAPP.Migrations
                         .HasColumnName("dateModified");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("description");
 
@@ -200,6 +204,7 @@ namespace NGOAPP.Migrations
                         .HasColumnName("dateModified");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("description");
 
@@ -237,6 +242,7 @@ namespace NGOAPP.Migrations
                         .HasColumnName("dateModified");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("description");
 
@@ -269,6 +275,7 @@ namespace NGOAPP.Migrations
                         .HasColumnName("dateModified");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("description");
 
@@ -511,6 +518,7 @@ namespace NGOAPP.Migrations
                         .HasColumnName("dateModified");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("description");
 
@@ -543,6 +551,7 @@ namespace NGOAPP.Migrations
                         .HasColumnName("dateModified");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("description");
 

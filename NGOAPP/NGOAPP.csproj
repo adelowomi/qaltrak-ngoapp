@@ -30,7 +30,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Models/AppModels/" />
     <Folder Include="Models/IdentityModels/" />
     <Folder Include="Repositories/" />
     <Folder Include="Repositories/Abstractions/" />

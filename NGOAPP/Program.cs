@@ -22,6 +22,13 @@ app.UseCors(x => x
 
 app.UseRouting();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<Context>();
+    // use context
+    new SeedData(context).SeedInitialData();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 

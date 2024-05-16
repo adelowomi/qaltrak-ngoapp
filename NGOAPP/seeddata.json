@@ -1,0 +1,45 @@
+{
+    "EventTypes": [
+        "Appearance or signing",
+        "Conference",
+        "Seminar/talk",
+        "Expo/trade show",
+        "Festival/fairs",
+        "Concert",
+        "Dinner/Gala",
+        "Workshop",
+        "Meetings/Networking",
+        "Party/Gatherings",
+        "Game",
+        "Others"
+    ],
+    "EventCategoriesAndSubCategories": [
+        {
+            "Category": "Business",
+            "SubCategories": [
+                "Start-ups/small businesses",
+                "Finance",
+                "Environment & sustainability",
+                "Design & development",
+                "Media",
+                "Others"
+            ]
+        },
+        {
+            "Category": "Music",
+            "SubCategories": [
+                "Alter",
+                "Blues",
+                "Classical",
+                "Country",
+                "Electronic",
+                "Hip-hop",
+                "Metal"
+            ]
+        },
+        {
+            "Category": "Others",
+            "SubCategories": []
+        }
+    ]
+}
