@@ -18,8 +18,6 @@ namespace NGOAPP.Models.IdentityModels
         public string? Bio { get; set; }
         public string? ImageUrl { get; set; }
         public int? UserId { get; set; } // Assuming UserId is an integer for simplicity
-        public string? UserName { get; set; }
-        public string? PhoneNumber { get; set; }
         public List<string>? DeviceId { get; set; } // List of device IDs as strings
         public string? Gender { get; set; }
         public string? AddressLine1 { get; set; }

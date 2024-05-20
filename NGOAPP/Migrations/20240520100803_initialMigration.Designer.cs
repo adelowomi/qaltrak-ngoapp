@@ -12,8 +12,8 @@ using NGOAPP;
 namespace NGOAPP.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240516111027_MakeDescriptionNullableInUtilityModels")]
-    partial class MakeDescriptionNullableInUtilityModels
+    [Migration("20240520100803_initialMigration")]
+    partial class initialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
