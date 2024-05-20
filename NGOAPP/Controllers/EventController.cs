@@ -1,16 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace NGOAPP;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class EventController : StandardControllerBase
 {
     private readonly IEventService _eventService;
+    private readonly PagingOptions _defaultPagingOptions;
 
-    public EventController(IEventService eventService)
+    public EventController(IEventService eventService, IOptions<PagingOptions> defaultPagingOptions)
     {
         _eventService = eventService;
+        _defaultPagingOptions = defaultPagingOptions.Value;
     }
 
     [HttpPost("create", Name = nameof(CreateEvent))]
@@ -73,6 +78,7 @@ public class EventController : StandardControllerBase
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<EventView>>), 500)]
     public async Task<ActionResult<StandardResponse<PagedCollection<EventView>>>> ListEvents([FromQuery] PagingOptions _options)
     {
+        _options.Replace(_defaultPagingOptions);
         return Result(await _eventService.ListEvents(_options));
     }
 

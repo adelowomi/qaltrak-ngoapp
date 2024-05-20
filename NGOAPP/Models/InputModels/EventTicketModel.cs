@@ -15,4 +15,5 @@ public class EventTicketModel
     public DateTime EndDate { get; set; }
     public bool IsAvailable { get; set; }
     public bool IsSoldOut { get; set; }
+    public int TicketTypeId { get; set; }
 }

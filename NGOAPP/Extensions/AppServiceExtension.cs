@@ -22,6 +22,7 @@ public static class AppServiceExtensions
         var _appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
         var appSettingsSection = configuration.GetSection(nameof(AppSettings));
         services.Configure<AppSettings>(appSettingsSection);
+        services.Configure<PagingOptions>(configuration.GetSection("DefaultPagingOptions"));
         var assembly = typeof(AppServiceExtensions).Assembly.GetName().Name;
         services.AddDbContext<Context>(options =>
             {

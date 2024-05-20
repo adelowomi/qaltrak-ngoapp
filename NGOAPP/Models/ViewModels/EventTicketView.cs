@@ -1,10 +1,8 @@
-﻿using NGOAPP.Models.AppModels;
+﻿namespace NGOAPP;
 
-namespace NGOAPP;
-
-public class EventTicket : BaseModel
+public class EventTicketView
 {
-    public Guid EventId { get; set; }
+     public Guid EventId { get; set; }
     public int TicketTypeId { get; set; }
     public int Quantity { get; set; }
     public int MaxQuantityPerOrder { get; set; }
@@ -17,6 +15,5 @@ public class EventTicket : BaseModel
     public bool IsAvailable { get; set; }
     public bool IsSoldOut { get; set; }
     public bool IsDeleted { get; set; }
-    public Event Event { get; set; }
-    public TicketType TicketType { get; set; }
+    public BaseViewModelI TicketType { get; set; }
 }

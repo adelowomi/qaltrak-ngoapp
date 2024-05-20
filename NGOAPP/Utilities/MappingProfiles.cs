@@ -11,7 +11,19 @@ public class MappingProfiles: Profile
         CreateMap<User, UserView>();
 
         // paystack mapping profiles
-       
+        CreateMap<Event, EventView>();
+        CreateMap<EventTicket, EventTicketView>();
+        CreateMap<TicketType, BaseViewModelI>();
+        CreateMap<Contact, ContactView>();
+        CreateMap<Session, SessionView>();
+        CreateMap<Speaker, SpeakerView>();
+        CreateMap<Location, LocationView>();
+        CreateMap<LocationType, BaseViewModelI>();
+        CreateMap<Status, BaseViewModelI>();
+        CreateMap<EventType, BaseViewModel>();
+        CreateMap<EventCategory, BaseViewModel>();
+        CreateMap<EventSubCategory, BaseViewModelI>();
+        CreateMap<Schedule, ScheduleView>();
     }
 
 }

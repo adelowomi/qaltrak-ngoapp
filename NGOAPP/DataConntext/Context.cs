@@ -29,4 +29,14 @@ public class Context : IdentityDbContext<User, Role, Guid>
     public DbSet<Status> Statuses { get; set; }
     public DbSet<LocationType> LocationTypes { get; set; }
     public DbSet<TicketType> TicketTypes { get; set; }
+
+    public DbSet<Event> Events { get; set; }
+    public DbSet<EventTicket> EventTickets { get; set; }
+    public DbSet<Location> Locations { get; set; }
+    public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<Media> Medias { get; set; }
+    public DbSet<Schedule> Schedules { get; set; }
+    public DbSet<Contact> Contacts { get; set; }
+    public DbSet<Session> Sessions { get; set; }
+    public DbSet<Speaker> Speakers { get; set; }
 }

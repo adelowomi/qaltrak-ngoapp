@@ -10,5 +10,5 @@ public class ContactModel
     public string AltPhoneNumber2 { get; set; }
     public string? Email { get; set; }
     public Guid? UserId { get; set; }
-    public string ImageUrl { get; set; }
+    public string Image { get; set; }
 }

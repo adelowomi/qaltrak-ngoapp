@@ -1,9 +1,6 @@
-﻿using NGOAPP.Models.AppModels;
-using NGOAPP.Models.IdentityModels;
+﻿namespace NGOAPP;
 
-namespace NGOAPP;
-
-public class Contact : BaseModel
+public class ContactView : BaseViewModel
 {
     public string Name { get; set; }
     public string? Description { get; set; } // Description field might not be applicable here, adjust based on your data
@@ -17,9 +14,9 @@ public class Contact : BaseModel
     // Allow email to be a nullable string
     public string? Email { get; set; }
 
-    public string Image { get; set; } 
+    public string Image { get; set; }
     public Guid EventId { get; set; }
     public Event Event { get; set; }
     public Guid? UserId { get; set; }
-    public User User { get; set; }
+    public UserView User { get; set; }
 }

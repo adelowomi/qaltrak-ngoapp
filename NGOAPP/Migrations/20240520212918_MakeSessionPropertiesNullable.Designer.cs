@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NGOAPP;
 
@@ -11,9 +12,11 @@ using NGOAPP;
 namespace NGOAPP.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240520212918_MakeSessionPropertiesNullable")]
+    partial class MakeSessionPropertiesNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -462,9 +465,13 @@ namespace NGOAPP.Migrations
                         .HasColumnType("decimal(65,30)")
                         .HasColumnName("tax");
 
-                    b.Property<int>("TicketTypeId")
-                        .HasColumnType("int")
+                    b.Property<Guid>("TicketTypeId")
+                        .HasColumnType("char(36)")
                         .HasColumnName("ticketTypeId");
+
+                    b.Property<int>("TicketTypeId1")
+                        .HasColumnType("int")
+                        .HasColumnName("ticketTypeId1");
 
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(65,30)")
@@ -476,8 +483,8 @@ namespace NGOAPP.Migrations
                     b.HasIndex("EventId")
                         .HasDatabaseName("iX_eventTickets_eventId");
 
-                    b.HasIndex("TicketTypeId")
-                        .HasDatabaseName("iX_eventTickets_ticketTypeId");
+                    b.HasIndex("TicketTypeId1")
+                        .HasDatabaseName("iX_eventTickets_ticketTypeId1");
 
                     b.ToTable("eventTickets", (string)null);
                 });
@@ -1546,10 +1553,10 @@ namespace NGOAPP.Migrations
 
                     b.HasOne("NGOAPP.TicketType", "TicketType")
                         .WithMany()
-                        .HasForeignKey("TicketTypeId")
+                        .HasForeignKey("TicketTypeId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fK_eventTickets_ticketTypes_ticketTypeId");
+                        .HasConstraintName("fK_eventTickets_ticketTypes_ticketTypeId1");
 
                     b.Navigation("Event");
 

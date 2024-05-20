@@ -1,4 +1,5 @@
-﻿using Hangfire;
+﻿using AutoMapper;
+using Hangfire;
 using NGOAPP;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +47,8 @@ app.UseHangfireServer();
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+IQueryableExtensions.Configure(app.Services.GetRequiredService<IMapper>(), app.Services.GetRequiredService<AutoMapper.IConfigurationProvider>());
 
 app.Run();
 
