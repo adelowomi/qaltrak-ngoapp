@@ -33,5 +33,6 @@ public class Location : BaseModel
     // You can use an enum for specific types (bus, session, taxi)
     public LocationType Type { get; set; }
 
-    public int EventId { get; set; }
+    public Guid EventId { get; set; }
+    public Event Event { get; set; }
 }

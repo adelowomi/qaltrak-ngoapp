@@ -1,4 +1,5 @@
 ﻿using NGOAPP.Models.AppModels;
+using NGOAPP.Models.IdentityModels;
 
 namespace NGOAPP;
 
@@ -17,6 +18,8 @@ public class Contact : BaseModel
     public string? Email { get; set; }
 
     public Media Image { get; set; } 
-    public Guid? EventId { get; set; }
+    public Guid EventId { get; set; }
+    public Event Event { get; set; }
     public Guid? UserId { get; set; }
+    public User User { get; set; }
 }

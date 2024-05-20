@@ -23,10 +23,21 @@ public class Event : BaseModel
     public string EventContact { get; set; }
     public int? TotalCapacity { get; set; } // Use int? for nullable values
     public Guid? EventTicketId { get; set; }
-    public EventTicket EventTicket { get; set; }
-    public TicketType? TicketType { get; set; } // Use enum for specific types
-
-    // Use int? for nullable foreign key references (assuming Country and Continent tables)
-    public int? CountryId { get; set; }
-    public int? ContinentId { get; set; }
+    public EventTicket EventTicket { get; set; } 
+    // // Use int? for nullable foreign key references (assuming Country and Continent tables)
+    // public int? CountryId { get; set; }
+    // public int? ContinentId { get; set; }
+    public int? NumberOfVolunteersNeeded { get; set; }
+    public bool AttendeesCanVolunteer { get; set; }
+    public string? QuestionsForAttendees { get; set; }
+    public List<string>? Tags { get; set; }
+    public Guid? EventTypeId { get; set; }
+    public Guid? EventCategoryId { get; set; }
+    public Guid? EventSubCategoryId { get; set; }
+    public DateTime? PublishDate { get; set; } = DateTime.Now;
+    public bool? IsPrivate { get; set; }
+    public bool? IsPublished { get; set; }
+    public ICollection<Location> Locations { get; set; }
+    public ICollection<Schedule> Schedules { get; set; }
+    public ICollection<Contact> Contacts { get; set; }
 }

@@ -148,7 +148,7 @@ public class StandardResponse<T> : Link
 [Route("api/[controller]")]
 public class StandardControllerBase : ControllerBase
 {
-    protected ObjectResult ChitResult<T>(StandardResponse<T> response)
+    protected ObjectResult Result<T>(StandardResponse<T> response)
     {
         switch (response.StatusCode)
         {

@@ -13,6 +13,7 @@ public static class AppServiceExtensions
         services.AddTransient<IPostmarkHelper, PostmarkHelper>();
         services.AddTransient<IUserService, UserService>();
         services.AddTransient<IUtilityService, UtilityService>();
+        services.AddTransient<IEventService, EventService>();
     }
 
 
