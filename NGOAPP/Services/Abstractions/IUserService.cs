@@ -9,4 +9,5 @@ public interface IUserService
     Task SendConfirmationLinkAsync(User user, string email, string confirmationLink, bool isMobile);
     Task SendPasswordResetCodeAsync(User user, string email, string resetCode);
     Task SendPasswordResetLinkAsync(User user, string email, string resetLink);
+    Task<StandardResponse<UserView>> RegisterUserAsync(UserModel model);
 }

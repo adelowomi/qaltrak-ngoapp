@@ -30,4 +30,13 @@ public class IdentityController : StandardControllerBase
         var response = await _userService.ResetPasswordAsyncMobile(model);
         return Ok(response);
     }
+
+    [HttpPost("register", Name = nameof(RegisterUser))]
+    [ProducesResponseType(typeof(StandardResponse<UserView>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StandardResponse<UserView>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> RegisterUser([FromBody] UserModel model)
+    {
+        var response = await _userService.RegisterUserAsync(model);
+        return Ok(response);
+    }
 }

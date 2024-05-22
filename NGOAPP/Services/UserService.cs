@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NGOAPP.Extensions;
@@ -74,6 +75,26 @@ public class UserService : IUserService
 
     }
 
+    public async Task<StandardResponse<UserView>> RegisterUserAsync(UserModel model)
+    {
+        var isMobile = _httpContextAccessor.IsMobileRequest(); 
+        var userToCreate = model.Adapt<User>();
+        var existingUser = await _userManager.FindByEmailAsync(model.Email);
+        if (existingUser != null)
+            return StandardResponse<UserView>.Error("User already exists");
+
+        var result = await _userManager.CreateAsync(userToCreate, model.Password);
+        if (!result.Succeeded)
+            return StandardResponse<UserView>.Error(result.Errors.FirstOrDefault().Description);
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        var email = user.Email;
+        var confirmationLink = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        await SendConfirmationLinkAsync(user, email, confirmationLink, isMobile);
+
+        var userView = _mapper.Map<UserView>(user);
+        return StandardResponse<UserView>.Ok(userView);
+    }
 
 
 

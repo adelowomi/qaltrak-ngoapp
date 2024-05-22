@@ -76,10 +76,10 @@ public class EventController : StandardControllerBase
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<EventView>>), 200)]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<EventView>>), 400)]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<EventView>>), 500)]
-    public async Task<ActionResult<StandardResponse<PagedCollection<EventView>>>> ListEvents([FromQuery] PagingOptions _options)
+    public async Task<ActionResult<StandardResponse<PagedCollection<EventView>>>> ListEvents([FromQuery] PagingOptions _options, [FromQuery] EventFilterOptions filterOptions)
     {
         _options.Replace(_defaultPagingOptions);
-        return Result(await _eventService.ListEvents(_options));
+        return Result(await _eventService.ListEvents(_options, filterOptions));
     }
 
 

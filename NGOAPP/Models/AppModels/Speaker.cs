@@ -8,5 +8,5 @@ public class Speaker : BaseViewModel
     // Use ICollection<T> for a flexible collection type (replace T with actual session class)
     public ICollection<Session> Sessions { get; set; } = new List<Session>();
     public List<Media> Images { get; set; } // Assuming a string representing image URLs or paths
-    public int EventId { get; set; }
+    public Guid EventId { get; set; }
 }

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Formats.Asn1;
+using System.Net;
 using AutoMapper;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -114,11 +115,46 @@ public class EventService : IEventService
     }
 
     //TODO: add search and filter options to the list events method
-    public async Task<StandardResponse<PagedCollection<EventView>>> ListEvents(PagingOptions _options)
+    public async Task<StandardResponse<PagedCollection<EventView>>> ListEvents(PagingOptions _options, EventFilterOptions filterOptions)
     {
-        var events = _eventRepository.Query().Include(x => x.Locations).Include(x => x.Schedules).Include(x => x.Contacts).OrderByDescending(x => x.DateCreated);
+        var events = _eventRepository.Query().Include(x => x.Locations).Include(x => x.Schedules).Include(x => x.Contacts).OrderByDescending(x => x.DateCreated).AsQueryable();
+        events = FilterEvents(events, filterOptions);
         var pagedEvents = events.ToPagedCollection<Event, EventView>(_options, Link.ToCollection(nameof(EventController.ListEvents)));
         return StandardResponse<PagedCollection<EventView>>.Create(true, "Events retrieved successfully", pagedEvents);
+    }
+
+    public async Task<StandardResponse<List<SessionView>>> ListEventSessions(Guid eventId)
+    {
+        var eventSessions = _sessionRepository.Query().Where(x => x.EventId == eventId).ToList();
+        var sessionViews = eventSessions.Adapt<List<SessionView>>();
+        return StandardResponse<List<SessionView>>.Create(true, "Event sessions retrieved successfully", sessionViews);
+    }
+
+    public async Task<StandardResponse<List<SpeakerView>>> ListEventSpeakers(Guid eventId)
+    {
+        var eventSpeakers = _speakerRepository.Query().Where(x => x.EventId == eventId).ToList();
+        var speakerViews = eventSpeakers.Adapt<List<SpeakerView>>();
+        return StandardResponse<List<SpeakerView>>.Create(true, "Event speakers retrieved successfully", speakerViews);
+    }
+
+    private IQueryable<Event> FilterEvents(IQueryable<Event> events ,EventFilterOptions filterOptions)
+    {
+        if (filterOptions.EventTypeId.HasValue)
+            events = events.Where(x => x.EventTypeId == filterOptions.EventTypeId);
+
+        if (filterOptions.EventCategoryId.HasValue)
+            events = events.Where(x => x.EventCategoryId == filterOptions.EventCategoryId);
+
+        if (filterOptions.EventSubCategoryId.HasValue)
+            events = events.Where(x => x.EventSubCategoryId == filterOptions.EventSubCategoryId);
+
+        if (filterOptions.StartDate.HasValue)
+            events = events.Where(x => x.StartDate >= filterOptions.StartDate);
+
+        if (filterOptions.EndDate.HasValue)
+            events = events.Where(x => x.EndDate <= filterOptions.EndDate);
+
+        return events;
     }
 
 
