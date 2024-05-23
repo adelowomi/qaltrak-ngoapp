@@ -33,7 +33,7 @@ public class EventService : IEventService
     {
         var newEvent = model.Adapt<Event>();
         newEvent =  _eventRepository.CreateAndReturn(newEvent);
-        var eventView = newEvent.Adapt<EventView>();
+        var eventView = _mapper.Map<EventView>(newEvent);
         return StandardResponse<EventView>.Create(true, "Event created successfully", eventView);
     }
 
