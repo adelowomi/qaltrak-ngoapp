@@ -56,7 +56,7 @@ public class EventService : IEventService
         existingEvent.StartDate = model.StartDate;
         existingEvent.EndDate = model.EndDate;
         _eventRepository.Update(existingEvent);
-        var eventView = existingEvent.Adapt<EventView>();
+        var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event details updated successfully", eventView);
     }
 
@@ -69,7 +69,7 @@ public class EventService : IEventService
         var newEventTicket = model.Adapt<EventTicket>();
         newEventTicket = _eventTicketRepository.CreateAndReturn(newEventTicket);
 
-        var eventView = existingEvent.Adapt<EventView>();
+        var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event tickets updated successfully", eventView);
     }
 
@@ -83,7 +83,7 @@ public class EventService : IEventService
         existingEvent.AttendeesCanVolunteer = model.AttendeesCanVolunteer;
         existingEvent.QuestionsForAttendees = model.QuestionsForAttendees;
         _eventRepository.Update(existingEvent);
-        var eventView = existingEvent.Adapt<EventView>();
+        var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event order form details updated successfully", eventView);
     }
 
@@ -100,7 +100,7 @@ public class EventService : IEventService
         existingEvent.IsPrivate = model.IsPrivate;
         existingEvent.IsPublished = model.PublishNow;
         _eventRepository.Update(existingEvent);
-        var eventView = existingEvent.Adapt<EventView>();
+        var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event published successfully", eventView);
     }
 
