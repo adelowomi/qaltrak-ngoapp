@@ -39,4 +39,7 @@ public class Context : IdentityDbContext<User, Role, Guid>
     public DbSet<Contact> Contacts { get; set; }
     public DbSet<Session> Sessions { get; set; }
     public DbSet<Speaker> Speakers { get; set; }
+    public DbSet<Group> Groups { get; set; }
+    public DbSet<GroupFollow> GroupFollows { get; set; }
+    public DbSet<GroupUser> GroupUsers { get; set; }
 }

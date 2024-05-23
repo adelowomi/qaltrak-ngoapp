@@ -27,6 +27,8 @@ namespace NGOAPP.Models.IdentityModels
         public string? Country { get; set; }
         public string? PostalCode { get; set; }
         public string? Department { get; set; }
+        public ICollection<Group>? Groups { get; set; }
+
     }
 }
 

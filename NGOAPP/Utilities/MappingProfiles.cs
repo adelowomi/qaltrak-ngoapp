@@ -24,6 +24,7 @@ public class MappingProfiles: Profile
         CreateMap<EventCategory, BaseViewModel>();
         CreateMap<EventSubCategory, BaseViewModelI>();
         CreateMap<Schedule, ScheduleView>();
+        CreateMap<Group, GroupView>();
     }
 
 }

@@ -1,4 +1,5 @@
 ﻿using NGOAPP.Models.AppModels;
+using NGOAPP.Models.IdentityModels;
 
 namespace NGOAPP;
 
@@ -42,4 +43,9 @@ public class Event : BaseModel
     public ICollection<Location> Locations { get; set; }
     public ICollection<Schedule> Schedules { get; set; }
     public ICollection<Contact> Contacts { get; set; }
+    // the user who created the event
+    public Guid? UserId { get; set; }
+    public User User { get; set; }
+    public Guid? GroupId { get; set; }
+    public Group Group { get; set; }
 }

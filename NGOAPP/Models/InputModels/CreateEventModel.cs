@@ -5,4 +5,5 @@ public class CreateEventModel
     public List<string> Images { get; set; }
     public string Title { get; set; }
     public string Description { get; set; } 
+    public Guid? GroupId { get; set; }
 }
