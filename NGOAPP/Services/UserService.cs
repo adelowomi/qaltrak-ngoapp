@@ -127,7 +127,7 @@ public class UserService : IUserService
 
     public async Task SendPasswordResetCodeAsync(User user, string email, string resetCode, bool isMobile)
     {
-        var link = $"{_appSettings.FrontEndUrl}/password/reset/{resetCode}";
+        var link = $"{_appSettings.FrontEndUrl}/password/reset/{resetCode}?email={email}";
         // check if this is a mobile request
         var templateModel = new Dictionary<string, string>
         {
