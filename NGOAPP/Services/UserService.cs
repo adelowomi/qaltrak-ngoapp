@@ -133,7 +133,7 @@ public class UserService : IUserService
         {
             { "code", resetCode },
             { "username", user.FirstName},
-            { "link", link}
+            { "link", link }
 
         };
         // if this is a mobile request, send a code instead of a link
