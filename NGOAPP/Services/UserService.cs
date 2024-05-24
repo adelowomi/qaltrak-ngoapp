@@ -35,12 +35,12 @@ public class UserService : IUserService
         if (codeData == null)
             return StandardResponse<UserView>.Error("Invalid code");
 
-        var userId = codeData.Description.Split("|")[0];
+        var userId = codeData.Description.Split("||")[0];
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
             return StandardResponse<UserView>.Error("User not found");
 
-        var originalCode = codeData.Description.Split("|")[2];
+        var originalCode = codeData.Description.Split("||")[1];
         if (originalCode == null)
             return StandardResponse<UserView>.Error("Invalid code");
 
@@ -58,12 +58,12 @@ public class UserService : IUserService
         if (codeData == null)
             return StandardResponse<bool>.Error("Invalid code");
 
-        var userId = codeData.Description.Split("|")[0];
-        var user = await _userManager.FindByIdAsync(userId);
+        var userEmail = codeData.Description.Split("||")[0];
+        var user = await _userManager.FindByIdAsync(userEmail);
         if (user == null)
             return StandardResponse<bool>.Error("User not found");
 
-        var originalCode = codeData.Description.Split("|")[2];
+        var originalCode = codeData.Description.Split("||")[1];
         if (originalCode == null)
             return StandardResponse<bool>.Error("Invalid code");
 
@@ -115,7 +115,7 @@ public class UserService : IUserService
             // generate confirm email token for user
             var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             // combine userId with original code + tyoe
-            var description = $"{user.Id}|{CodeType.EmailConfirmation}|{confirmationToken}";
+            var description = $"{user.Id}||{confirmationToken}";
             var code = _codeService.GenerateCode(description, 6,numberOnly: true);
             templateModel.Add("code", code);
             await _postmarkHelper.SendTemplatedEmail(EmailTemplates.UserRegistrationTemplateMobile, email, templateModel);
@@ -125,24 +125,23 @@ public class UserService : IUserService
     }
 
 
-    public async Task SendPasswordResetCodeAsync(User user, string email, string resetCode)
+    public async Task SendPasswordResetCodeAsync(User user, string email, string resetCode, bool isMobile)
     {
         // check if this is a mobile request
-        var isMobile = _httpContextAccessor.IsMobileRequest();
-
         var templateModel = new Dictionary<string, string>
         {
             { "code", resetCode },
             { "username", user.FirstName}
         };
-
         // if this is a mobile request, send a code instead of a link
         if (isMobile)
         {
             var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             // combine userId with original code + tyoe
-            var description = $"{user.Id}|{CodeType.PasswordReset}|{passwordResetToken}";
+            var description = $"{email}||{passwordResetToken}";
             var code = _codeService.GenerateCode(description, 6,numberOnly: true);
+            // add the code to the template model
+            templateModel["code"] = code;
             await _postmarkHelper.SendTemplatedEmail(EmailTemplates.PasswordResetTemplateMobile, email, templateModel);
         }
 

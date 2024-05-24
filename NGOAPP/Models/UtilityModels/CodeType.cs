@@ -7,7 +7,7 @@ namespace NGOAPP.Models.UtilityModels
 {
     public class CodeType
     {
-        public static string EmailConfirmation = "EmailConfirmation";
-        public static string PasswordReset = "PasswordReset";
+        public const string EmailConfirmation = "EmailConfirmation";
+        public const string PasswordReset = "PasswordReset";
     }
 }

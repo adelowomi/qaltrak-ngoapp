@@ -2,8 +2,8 @@
 
 public class EmailTemplates
 {
-    public static string UserRegistrationTemplate = "35850912";
-    public static string UserRegistrationTemplateMobile = "35851042";
-    public static string PasswordResetTemplate = "35852341";
-    public static string PasswordResetTemplateMobile = "35852900";
+    public static string UserRegistrationTemplate = "36039243";
+    public static string UserRegistrationTemplateMobile = "36039244";
+    public static string PasswordResetTemplate = "36039245";
+    public static string PasswordResetTemplateMobile = "36039246";
 }

@@ -27,10 +27,8 @@ public class IdentityEmailSender : IEmailSender<User>
 
     public Task SendPasswordResetCodeAsync(User user, string email, string resetCode)
     {
-        if(_httpContextAccessor.IsMobileRequest())
-        {
-            BackgroundJob.Enqueue<IUserService>(x => x.SendPasswordResetCodeAsync(user, email, resetCode));
-        }
+        bool isMobile = _httpContextAccessor.IsMobileRequest();
+        BackgroundJob.Enqueue<IUserService>(x => x.SendPasswordResetCodeAsync(user, email, resetCode, isMobile));
         return Task.CompletedTask;
     }
 

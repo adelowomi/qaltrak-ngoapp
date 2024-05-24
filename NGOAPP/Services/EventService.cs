@@ -137,6 +137,10 @@ public class EventService : IEventService
         return StandardResponse<List<SpeakerView>>.Create(true, "Event speakers retrieved successfully", speakerViews);
     }
 
+    // update event details, tickets, order form details
+
+
+    #region Private Methods
     private IQueryable<Event> FilterEvents(IQueryable<Event> events ,EventFilterOptions filterOptions)
     {
         if (filterOptions.EventTypeId.HasValue)
@@ -156,6 +160,7 @@ public class EventService : IEventService
 
         return events;
     }
+    #endregion
 
 
     // private methods for processing schedules, locations, contacts, sessions, speakers and other related entities
