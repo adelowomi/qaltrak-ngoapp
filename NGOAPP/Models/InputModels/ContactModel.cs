@@ -7,8 +7,8 @@ public class ContactModel
     public string Department { get; set; }
     public string? Phone { get; set; }
     public string AltPhoneNumber1 { get; set; }
-    public string AltPhoneNumber2 { get; set; }
+    public string? AltPhoneNumber2 { get; set; }
     public string? Email { get; set; }
     public Guid? UserId { get; set; }
-    public string Image { get; set; }
+    public string? Image { get; set; }
 }

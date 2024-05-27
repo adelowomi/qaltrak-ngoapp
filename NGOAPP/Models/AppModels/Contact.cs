@@ -17,7 +17,7 @@ public class Contact : BaseModel
     // Allow email to be a nullable string
     public string? Email { get; set; }
 
-    public string Image { get; set; } 
+    public string? Image { get; set; } 
     public Guid EventId { get; set; }
     public Event Event { get; set; }
     public Guid? UserId { get; set; }

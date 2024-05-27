@@ -40,7 +40,7 @@ public class EventController : StandardControllerBase
     [ProducesResponseType(typeof(StandardResponse<EventView>), 200)]
     [ProducesResponseType(typeof(StandardResponse<EventView>), 400)]
     [ProducesResponseType(typeof(StandardResponse<EventView>), 500)]
-    public async Task<ActionResult<StandardResponse<EventView>>> AddEventTickets([FromBody] EventTicketModel model)
+    public async Task<ActionResult<StandardResponse<EventView>>> AddEventTickets([FromBody] CreateEventTicketModel model)
     {
         return Result(await _eventService.AddEVentTickets(model));
     }

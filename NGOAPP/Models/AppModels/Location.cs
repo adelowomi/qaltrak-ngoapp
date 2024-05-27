@@ -5,9 +5,9 @@ namespace NGOAPP;
 public class Location : BaseModel
 {
     public string Name { get; set; }
-    public string Description { get; set; }
+    public string? Description { get; set; }
     public ICollection<Media> Images { get; set; }
-    public double Longitude { get; set; }
+public double Longitude { get; set; }
     public double Latitude { get; set; }
     public string AddressLine { get; set; }
     public string? LocationUrl { get; set; }

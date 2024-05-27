@@ -17,3 +17,10 @@ public class EventTicketModel
     public bool IsSoldOut { get; set; }
     public int TicketTypeId { get; set; }
 }
+
+public class CreateEventTicketModel
+{
+    public Guid EventId { get; set; }
+    public int TotalCapacity { get; set; }
+    public List<EventTicketModel> Tickets { get; set; }
+}

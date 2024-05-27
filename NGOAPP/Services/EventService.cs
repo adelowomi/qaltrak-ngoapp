@@ -60,14 +60,14 @@ public class EventService : IEventService
         return StandardResponse<EventView>.Create(true, "Event details updated successfully", eventView);
     }
 
-    public async Task<StandardResponse<EventView>> AddEVentTickets(EventTicketModel model)
+    public async Task<StandardResponse<EventView>> AddEVentTickets(CreateEventTicketModel model)
     {
         var existingEvent = _eventRepository.GetById(model.EventId);
         if (existingEvent == null)
             return StandardResponse<EventView>.Error("Event not found", HttpStatusCode.NotFound);
 
-        var newEventTicket = model.Adapt<EventTicket>();
-        newEventTicket = _eventTicketRepository.CreateAndReturn(newEventTicket);
+        var newEventTickets = model.Adapt<List<EventTicket>>();
+        newEventTickets = _eventTicketRepository.CreateMultiple(newEventTickets);
 
         var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event tickets updated successfully", eventView);
