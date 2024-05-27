@@ -68,7 +68,7 @@ public static class AppServiceExtensions
         }).AddJsonOptions(
           options => {
            options.JsonSerializerOptions
-       .ReferenceHandler = ReferenceHandler.Preserve;
+       .ReferenceHandler = ReferenceHandler.IgnoreCycles;
       });
     }
 }
