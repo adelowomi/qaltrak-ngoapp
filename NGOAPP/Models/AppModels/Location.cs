@@ -15,5 +15,5 @@ public double Longitude { get; set; }
     public int? LocationTypeId { get; set; }
     public LocationType Type { get; set; }
     public Guid EventId { get; set; }
-    public Event Event { get; set; }
+    // public Event Event { get; set; }
 }

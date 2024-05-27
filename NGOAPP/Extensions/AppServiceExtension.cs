@@ -1,6 +1,7 @@
 ﻿using NGOAPP.Services;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
+using System.Text.Json.Serialization;
 
 namespace NGOAPP;
 
@@ -64,6 +65,10 @@ public static class AppServiceExtensions
         services.AddMvc(options =>
         {
             options.Filters.Add<LinkRewritingFilter>();
-        });
+        }).AddJsonOptions(
+          options => {
+           options.JsonSerializerOptions
+       .ReferenceHandler = ReferenceHandler.Preserve;
+      });
     }
 }
