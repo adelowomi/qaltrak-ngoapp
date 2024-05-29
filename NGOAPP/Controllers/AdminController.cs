@@ -45,7 +45,7 @@ public class AdminController : StandardControllerBase
         return Result(await _adminService.AddUserToGroup(userId, groupId));
     }
 
-    [HttpGet("list-group-users", Name = (nameof(ListGroupUsers)))]
+    [HttpGet("list/group/users", Name = (nameof(ListGroupUsers)))]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<UserView>>), 200)]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<UserView>>), 400)]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<UserView>>), 500)]
