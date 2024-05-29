@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace NGOAPP;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class GroupController : StandardControllerBase
 {
     private readonly IGroupService _groupService;
