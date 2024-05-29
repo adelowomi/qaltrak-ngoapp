@@ -96,8 +96,69 @@ public class UserService : IUserService
         return StandardResponse<UserView>.Ok(userView);
     }
 
+    public async Task<StandardResponse<UserView>> GetUserProfile()
+    {
+        var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            return StandardResponse<UserView>.Error("User not found");
 
+        var userView = _mapper.Map<UserView>(user);
+        return StandardResponse<UserView>.Ok(userView);
+    }
 
+    public async Task<StandardResponse<UserView>> UpdateUser(UserProfile model)
+    {
+        var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            return StandardResponse<UserView>.Error("User not found");
+
+        // update user properties that are different from the model properties
+        if(!string.IsNullOrEmpty(model.FirstName) && model.FirstName.ToLower() != user.FirstName.ToLower())
+            user.FirstName = model.FirstName;
+
+        if (!string.IsNullOrEmpty(model.LastName) && model.LastName.ToLower() != user.LastName.ToLower())
+            user.LastName = model.LastName;
+
+        if (!string.IsNullOrEmpty(model.PhoneNumber) && model.PhoneNumber.ToLower() != user.PhoneNumber.ToLower())
+            user.PhoneNumber = model.PhoneNumber;
+
+        if (!string.IsNullOrEmpty(model.OtherNames) && model.OtherNames.ToLower() != user.OtherNames.ToLower())
+            user.OtherNames = model.OtherNames;
+
+        if (!string.IsNullOrEmpty(model.Bio) && model.Bio.ToLower() != user.Bio.ToLower())
+            user.Bio = model.Bio;
+        
+        if (!string.IsNullOrEmpty(model.ImageUrl) && model.ImageUrl.ToLower() != user.ImageUrl.ToLower())
+            user.ImageUrl = model.ImageUrl;
+
+        if (!string.IsNullOrEmpty(model.AddressLine1) && model.AddressLine1.ToLower() != user.AddressLine1.ToLower())
+            user.AddressLine1 = model.AddressLine1;
+
+        if (!string.IsNullOrEmpty(model.AddressLine2) && model.AddressLine2.ToLower() != user.AddressLine2.ToLower())
+            user.AddressLine2 = model.AddressLine2;
+
+        if (!string.IsNullOrEmpty(model.City) && model.City.ToLower() != user.City.ToLower())
+            user.City = model.City;
+
+        if (!string.IsNullOrEmpty(model.StateOrProvince) && model.StateOrProvince.ToLower() != user.StateOrProvince.ToLower())
+            user.StateOrProvince = model.StateOrProvince;
+
+        if (!string.IsNullOrEmpty(model.Country) && model.Country.ToLower() != user.Country.ToLower()) 
+            user.Country = model.Country;
+
+        if (!string.IsNullOrEmpty(model.PostalCode) && model.PostalCode.ToLower() != user.PostalCode.ToLower())
+            user.PostalCode = model.PostalCode;
+        
+        var updateResponse = await _userManager.UpdateAsync(user);
+        if (!updateResponse.Succeeded)
+            return StandardResponse<UserView>.Error(updateResponse.Errors.FirstOrDefault().Description);
+
+        user = await _userManager.FindByIdAsync(userId.ToString());
+        var userView = _mapper.Map<UserView>(user);
+        return StandardResponse<UserView>.Ok(userView);
+    }
     #region SendEmails for account confirmation and password reset
     public async Task SendConfirmationLinkAsync(User user, string email, string confirmationLink, bool isMobile)
     {

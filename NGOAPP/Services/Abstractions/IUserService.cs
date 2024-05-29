@@ -10,4 +10,6 @@ public interface IUserService
     Task SendPasswordResetCodeAsync(User user, string email, string resetCode, bool isMobile);
     Task SendPasswordResetLinkAsync(User user, string email, string resetLink);
     Task<StandardResponse<UserView>> RegisterUserAsync(UserModel model);
+    Task<StandardResponse<UserView>> GetUserProfile();
+    Task<StandardResponse<UserView>> UpdateUser(UserProfile model);
 }

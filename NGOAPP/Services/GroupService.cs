@@ -149,6 +149,14 @@ public class GroupService : IGroupService
         return StandardResponse<GroupDashboardView>.Ok(groupDashboardView);
     }
 
+    public async Task<StandardResponse<PagedCollection<GroupView>>> GetGroupsFollowedByUser(PagingOptions pagingOptions)
+    {
+        var loggedInUser = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var groupFollows = _groupFollowRepository.Query().Include(x => x.Group).Where(x => x.UserId == loggedInUser);
+        var pagedGroups = groupFollows.Select(x => x.Group).ToPagedCollection<Group, GroupView>(pagingOptions, Link.ToCollection(nameof(GroupController.GetGroupsFollowedByUser)));
+        return StandardResponse<PagedCollection<GroupView>>.Create(true, "Groups followed by user retrieved successfully", pagedGroups);
+    }
+
     private async Task<int> GetTotalEvents(Guid groupId)
     {
         return await _eventRepository.Query().CountAsync(x => x.GroupId == groupId);

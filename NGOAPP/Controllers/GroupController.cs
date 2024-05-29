@@ -84,4 +84,13 @@ public class GroupController : StandardControllerBase
     {
         return Result(await _groupService.GetGroupDashBoard(groupId));
     }
+
+    [HttpGet("user/followed", Name = nameof(GetGroupsFollowedByUser))]
+    [ProducesResponseType(typeof(StandardResponse<PagedCollection<GroupView>>), 200)]
+    [ProducesResponseType(typeof(StandardResponse<PagedCollection<GroupView>>), 400)]
+    [ProducesResponseType(typeof(StandardResponse<PagedCollection<GroupView>>), 500)]
+    public async Task<ActionResult<StandardResponse<PagedCollection<GroupView>>>> GetGroupsFollowedByUser([FromQuery] PagingOptions pagingOptions)
+    {
+        return Result(await _groupService.GetGroupsFollowedByUser(pagingOptions));
+    }
 }

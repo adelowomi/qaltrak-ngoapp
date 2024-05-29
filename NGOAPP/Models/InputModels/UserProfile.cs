@@ -1,14 +1,12 @@
 ﻿namespace NGOAPP;
 
-public class UserView
+public class UserProfile
 {
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
-    public string? FullName => $"{FirstName} {LastName}";
     public string? OtherNames { get; set; }
     public string? Bio { get; set; }
     public string? ImageUrl { get; set; }
-    public List<string>? DeviceId { get; set; } // List of device IDs as strings
     public string? Gender { get; set; }
     public string? AddressLine1 { get; set; }
     public string? AddressLine2 { get; set; }
