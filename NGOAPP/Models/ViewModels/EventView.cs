@@ -40,4 +40,5 @@ public class EventView : BaseViewModel
     public List<LocationView> Locations { get; set; }
     public List<ScheduleView> Schedules { get; set; }
     public List<ContactView> Contacts { get; set; }
+    public Guid GroupId { get; set; }
 }
