@@ -16,6 +16,7 @@ public static class AppServiceExtensions
         services.AddTransient<IUtilityService, UtilityService>();
         services.AddTransient<IEventService, EventService>();
         services.AddTransient<IGroupService, GroupService>();
+        services.AddTransient<IAdminService, AdminService>();
     }
 
 

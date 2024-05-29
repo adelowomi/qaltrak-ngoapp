@@ -18,6 +18,7 @@ public class Routes
 }
 public class Roles
 {
+    public const string PlatformAdmin = "Platform Admin";
     public const string Admin = "Admin";
     public const string User = "User";
 }

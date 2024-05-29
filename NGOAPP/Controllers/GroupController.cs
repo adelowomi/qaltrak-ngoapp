@@ -75,4 +75,13 @@ public class GroupController : StandardControllerBase
     {
         return Result(await _groupService.GetGroupFollowers(groupId));
     }
+
+    [HttpGet("dashboard/{groupId}", Name = nameof(GetGroupDashBoard))]
+    [ProducesResponseType(typeof(StandardResponse<GroupDashboardView>), 200)]
+    [ProducesResponseType(typeof(StandardResponse<GroupDashboardView>), 400)]
+    [ProducesResponseType(typeof(StandardResponse<GroupDashboardView>), 500)]
+    public async Task<ActionResult<StandardResponse<GroupDashboardView>>> GetGroupDashBoard(Guid groupId)
+    {
+        return Result(await _groupService.GetGroupDashBoard(groupId));
+    }
 }

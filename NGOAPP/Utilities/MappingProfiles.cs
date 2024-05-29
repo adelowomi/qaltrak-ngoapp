@@ -25,6 +25,9 @@ public class MappingProfiles: Profile
         CreateMap<EventSubCategory, BaseViewModelI>();
         CreateMap<Schedule, ScheduleView>();
         CreateMap<Group, GroupView>();
+
+        CreateMap<GroupUser, UserView>()
+            .ConstructUsing((src, dest) => dest.Mapper.Map<UserView>(src.User));
     }
 
 }

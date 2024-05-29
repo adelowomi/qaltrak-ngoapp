@@ -9,4 +9,5 @@ public interface IGroupService
     Task<StandardResponse<GroupView>> FollowGroup(Guid groupId);
     Task<StandardResponse<GroupView>> UnfollowGroup(Guid groupId);
     Task<StandardResponse<PagedCollection<FollowerView>>> GetGroupFollowers(Guid groupId);
+    Task<StandardResponse<GroupDashboardView>> GetGroupDashBoard(Guid groupId);
 }

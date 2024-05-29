@@ -13,14 +13,18 @@ public class GroupService : IGroupService
     private readonly IMapper _mapper;
     private readonly IBaseRepository<GroupFollow> _groupFollowRepository;
     private readonly IBaseRepository<GroupUser> _groupUserRepository;
+    private readonly IBaseRepository<Event> _eventRepository;
+    private readonly IBaseRepository<Ticket> _ticketRepository;
 
-    public GroupService(IBaseRepository<Group> groupRepository, IHttpContextAccessor httpContextAccessor, IMapper mapper, IBaseRepository<GroupFollow> groupFollowRepository, IBaseRepository<GroupUser> groupUserRepository)
+    public GroupService(IBaseRepository<Group> groupRepository, IHttpContextAccessor httpContextAccessor, IMapper mapper, IBaseRepository<GroupFollow> groupFollowRepository, IBaseRepository<GroupUser> groupUserRepository, IBaseRepository<Event> eventRepository, IBaseRepository<Ticket> ticketRepository)
     {
         _groupRepository = groupRepository;
         _httpContextAccessor = httpContextAccessor;
         _mapper = mapper;
         _groupFollowRepository = groupFollowRepository;
         _groupUserRepository = groupUserRepository;
+        _eventRepository = eventRepository;
+        _ticketRepository = ticketRepository;
     }
 
     public async Task<StandardResponse<GroupView>> CreateGroup(GroupModel model)
@@ -120,5 +124,68 @@ public class GroupService : IGroupService
         var groupFollowers = _groupFollowRepository.Query().Include(x => x.User).Where(x => x.GroupId == groupId);
         var pagedFollowers = groupFollowers.ToPagedCollection<GroupFollow, FollowerView>(new PagingOptions(), Link.ToCollection(nameof(GroupController.GetGroupFollowers)));
         return StandardResponse<PagedCollection<FollowerView>>.Create(true, "Group followers retrieved successfully", pagedFollowers);
+    }
+
+    public async Task<StandardResponse<GroupDashboardView>> GetGroupDashBoard(Guid groupId)
+    {
+        var totalEvents = await GetTotalEvents(groupId);
+        var totalPastEvents = await GetTotalPastEvents(groupId);
+        var totalUpComingEvents = await GetTotalUpComingEvents(groupId);
+        var totalAttendeeRegistered = await GetTotalAttendeeRegistered(groupId);
+        var totalFollowers = await GetTotalFollowers(groupId);
+        var upComingEvents = await GetUpcomingEvents(groupId);
+        var topPerformingEvents = await GetTopPerformingEvents(groupId);
+
+        var groupDashboardView = new GroupDashboardView
+        {
+            TotalEventsCreated = totalEvents,
+            TotalPastEvents = totalPastEvents,
+            TotalUpcomingEvents = totalUpComingEvents,
+            TotalAttendeeRegistered = totalAttendeeRegistered,
+            TotalFollowers = totalFollowers,
+            UpcomingEvents = upComingEvents,
+            TotalPerformingEventsPerResgistration = topPerformingEvents
+        };
+        return StandardResponse<GroupDashboardView>.Ok(groupDashboardView);
+    }
+
+    private async Task<int> GetTotalEvents(Guid groupId)
+    {
+        return await _eventRepository.Query().CountAsync(x => x.GroupId == groupId);
+    }
+
+    private async Task<int> GetTotalPastEvents(Guid groupId)
+    {
+        return await _eventRepository.Query().CountAsync(x => x.GroupId == groupId && x.EndDate < DateTime.Now);
+    }
+
+    private async Task<int> GetTotalUpComingEvents(Guid groupId)
+    {
+        return await _eventRepository.Query().CountAsync(x => x.GroupId == groupId && x.StartDate > DateTime.Now);
+    }
+
+    private async Task<int> GetTotalAttendeeRegistered(Guid groupId)
+    {
+        return await _ticketRepository.Query().Include(x => x.Event).CountAsync(x => x.Event.GroupId == groupId);
+    }
+
+    private async Task<int> GetTotalFollowers(Guid groupId)
+    {
+        return await _groupFollowRepository.Query().CountAsync(x => x.GroupId == groupId);
+    }
+
+    private async Task<List<EventView>> GetUpcomingEvents(Guid groupId)
+    {
+        var events = _eventRepository.Query().Where(x => x.GroupId == groupId && x.StartDate > DateTime.Now).Take(10).ToList();
+        return events.Adapt<List<EventView>>();
+    }
+
+    private async Task<List<EventView>> GetTopPerformingEvents(Guid groupId)
+    {
+        //get event id of highest number of tickets sold
+        var eventIds = _ticketRepository.Query().GroupBy(x => x.EventId).OrderByDescending(x => x.Count()).Select(x => x.Key).Take(10).ToList();
+        // get events with the highest number of tickets sold
+        var events = _eventRepository.Query().Where(x => eventIds.Contains(x.Id)).ToList();
+        return events.Adapt<List<EventView>>();
     }
 }
