@@ -1,4 +1,6 @@
-﻿namespace NGOAPP;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace NGOAPP;
 
 public class CreateEventModel
 {
