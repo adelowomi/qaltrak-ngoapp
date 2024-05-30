@@ -9,4 +9,6 @@ public class GroupView : BaseViewModel
     public string? Email { get; set; }
     public string? Mission { get; set; }
     public string? Commitment { get; set; }
+    public DateTime DateCreated { get; set; }
+    public int TotalNumberOfFollowers { get; set; }
 }

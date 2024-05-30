@@ -15,7 +15,6 @@ public class GroupService : IGroupService
     private readonly IBaseRepository<GroupUser> _groupUserRepository;
     private readonly IBaseRepository<Event> _eventRepository;
     private readonly IBaseRepository<Ticket> _ticketRepository;
-
     public GroupService(IBaseRepository<Group> groupRepository, IHttpContextAccessor httpContextAccessor, IMapper mapper, IBaseRepository<GroupFollow> groupFollowRepository, IBaseRepository<GroupUser> groupUserRepository, IBaseRepository<Event> eventRepository, IBaseRepository<Ticket> ticketRepository)
     {
         _groupRepository = groupRepository;
@@ -39,7 +38,7 @@ public class GroupService : IGroupService
         group.UserId = loggedInUser;
         group = _groupRepository.CreateAndReturn(group);
         var groupView = group.Adapt<GroupView>();
-        return StandardResponse<GroupView>.Create(true, "Group created successfully", groupView); 
+        return StandardResponse<GroupView>.Create(true, "Group created successfully", groupView);
     }
 
     public async Task<StandardResponse<GroupView>> UpdateGroup(GroupModel model, Guid groupId)
@@ -75,12 +74,16 @@ public class GroupService : IGroupService
         var groups = _groupRepository.Query().OrderByDescending(x => x.DateCreated).AsQueryable();
         var pagedGroups = groups.ToPagedCollection<Group, GroupView>(pagingOptions, Link.ToCollection(nameof(GroupController.ListGroups)));
         // get the count of followers for each group and add to the group view
+        pagedGroups.Value.ToList().ForEach(x =>
+        {
+            x.TotalNumberOfFollowers = _groupFollowRepository.Count(y => y.GroupId == x.Id);
+        });
         return StandardResponse<PagedCollection<GroupView>>.Create(true, "Groups retrieved successfully", pagedGroups);
     }
 
     public async Task<StandardResponse<List<GroupView>>> ListUserGroups(Guid userId)
     {
-        var userGroups  = _groupUserRepository.Query().Include(x => x.Group).Where(x => x.UserId == userId);
+        var userGroups = _groupUserRepository.Query().Include(x => x.Group).Where(x => x.UserId == userId);
         var groupViews = userGroups.Select(x => x.Group).Adapt<List<GroupView>>();
         return StandardResponse<List<GroupView>>.Create(true, "Groups retrieved successfully", groupViews);
     }
