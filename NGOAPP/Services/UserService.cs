@@ -107,6 +107,8 @@ public class UserService : IUserService
             return StandardResponse<UserView>.Error("User not found");
 
         var userView = _mapper.Map<UserView>(user);
+        var userRoles = await _userManager.GetRolesAsync(user);
+        userView.Roles = userRoles.ToList();
         return StandardResponse<UserView>.Ok(userView);
     }
 

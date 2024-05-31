@@ -49,7 +49,7 @@ public class AdminController : StandardControllerBase
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<UserView>>), 200)]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<UserView>>), 400)]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<UserView>>), 500)]
-    public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListGroupUsers([FromQuery] PagingOptions pagingOptions,[FromQuery] string searchQuery)
+    public async Task<ActionResult<StandardResponse<PagedCollection<UserView>>>> ListGroupUsers([FromQuery] PagingOptions pagingOptions,[FromQuery] string? searchQuery)
     {
         pagingOptions.Replace(_defaultPagingOptions);
         return Result(await _adminService.ListGroupUsers(pagingOptions, searchQuery));

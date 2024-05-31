@@ -19,4 +19,5 @@ public class UserView
     public string? PostalCode { get; set; }
     public string? Department { get; set; }
     public string? PhoneNumber { get; set; }
+    public List<string> Roles { get; set; }
 }
