@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NGOAPP.Extensions;
 using NGOAPP.Models.IdentityModels;
@@ -17,8 +18,9 @@ public class UserService : IUserService
     private readonly ICodeService _codeService;
     private readonly UserManager<User> _userManager;
     private readonly IMapper _mapper;
+    private readonly RoleManager<Role> _roleManager;
 
-    public UserService(IOptions<AppSettings> appSettings, IPostmarkHelper postmarkHelper, IHttpContextAccessor httpContextAccessor, ICodeService codeService, UserManager<User> userManager, IMapper mapper)
+    public UserService(IOptions<AppSettings> appSettings, IPostmarkHelper postmarkHelper, IHttpContextAccessor httpContextAccessor, ICodeService codeService, UserManager<User> userManager, IMapper mapper, RoleManager<Role> roleManager)
     {
         _appSettings = appSettings.Value;
         _postmarkHelper = postmarkHelper;
@@ -26,6 +28,7 @@ public class UserService : IUserService
         _codeService = codeService;
         _userManager = userManager;
         _mapper = mapper;
+        _roleManager = roleManager;
     }
 
 
@@ -77,7 +80,7 @@ public class UserService : IUserService
 
     public async Task<StandardResponse<UserView>> RegisterUserAsync(UserModel model)
     {
-        var isMobile = _httpContextAccessor.IsMobileRequest(); 
+        var isMobile = _httpContextAccessor.IsMobileRequest();
         var userToCreate = model.Adapt<User>();
         var existingUser = await _userManager.FindByEmailAsync(model.Email);
         if (existingUser != null)
@@ -107,6 +110,30 @@ public class UserService : IUserService
         return StandardResponse<UserView>.Ok(userView);
     }
 
+    public async Task AddUserToPlatformAdminROle(string UserId)
+    {
+        var user = await _userManager.FindByEmailAsync(UserId.ToString());
+        if (user == null)
+            return;
+
+        var roleExists = AssertRoleExists(Roles.PlatformAdmin);
+        await _userManager.AddToRoleAsync(user, Roles.PlatformAdmin);
+    }
+
+    private bool AssertRoleExists(string roleName)
+    {
+        var roleExists = _roleManager.RoleExistsAsync(roleName).Result;
+        if (!roleExists)
+        {
+            var role = new Role()
+            {
+                Name = roleName
+            };
+            var roleCreated = _roleManager.CreateAsync(role).Result;
+            return roleExists;
+        }
+        return true;
+    }
     public async Task<StandardResponse<UserView>> UpdateUser(UserProfile model)
     {
         var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
@@ -115,7 +142,7 @@ public class UserService : IUserService
             return StandardResponse<UserView>.Error("User not found");
 
         // update user properties that are different from the model properties
-        if(!string.IsNullOrEmpty(model.FirstName) && model.FirstName.ToLower() != user.FirstName.ToLower())
+        if (!string.IsNullOrEmpty(model.FirstName) && model.FirstName.ToLower() != user.FirstName.ToLower())
             user.FirstName = model.FirstName;
 
         if (!string.IsNullOrEmpty(model.LastName) && model.LastName.ToLower() != user.LastName.ToLower())
@@ -129,7 +156,7 @@ public class UserService : IUserService
 
         if (!string.IsNullOrEmpty(model.Bio) && model.Bio.ToLower() != user.Bio.ToLower())
             user.Bio = model.Bio;
-        
+
         if (!string.IsNullOrEmpty(model.ImageUrl) && model.ImageUrl.ToLower() != user.ImageUrl.ToLower())
             user.ImageUrl = model.ImageUrl;
 
@@ -145,12 +172,12 @@ public class UserService : IUserService
         if (!string.IsNullOrEmpty(model.StateOrProvince) && model.StateOrProvince.ToLower() != user.StateOrProvince.ToLower())
             user.StateOrProvince = model.StateOrProvince;
 
-        if (!string.IsNullOrEmpty(model.Country) && model.Country.ToLower() != user.Country.ToLower()) 
+        if (!string.IsNullOrEmpty(model.Country) && model.Country.ToLower() != user.Country.ToLower())
             user.Country = model.Country;
 
         if (!string.IsNullOrEmpty(model.PostalCode) && model.PostalCode.ToLower() != user.PostalCode.ToLower())
             user.PostalCode = model.PostalCode;
-        
+
         var updateResponse = await _userManager.UpdateAsync(user);
         if (!updateResponse.Succeeded)
             return StandardResponse<UserView>.Error(updateResponse.Errors.FirstOrDefault().Description);
@@ -177,12 +204,12 @@ public class UserService : IUserService
             var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             // combine userId with original code + tyoe
             var description = $"{user.Id}||{confirmationToken}";
-            var code = _codeService.GenerateCode(description, 6,numberOnly: true);
+            var code = _codeService.GenerateCode(description, 6, numberOnly: true);
             templateModel.Add("code", code);
             await _postmarkHelper.SendTemplatedEmail(EmailTemplates.UserRegistrationTemplateMobile, email, templateModel);
         }
 
-        await  _postmarkHelper.SendTemplatedEmail(EmailTemplates.UserRegistrationTemplate, email, templateModel);
+        await _postmarkHelper.SendTemplatedEmail(EmailTemplates.UserRegistrationTemplate, email, templateModel);
     }
 
 
@@ -203,7 +230,7 @@ public class UserService : IUserService
             var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             // combine userId with original code + tyoe
             var description = $"{email}||{passwordResetToken}";
-            var code = _codeService.GenerateCode(description, 6,numberOnly: true);
+            var code = _codeService.GenerateCode(description, 6, numberOnly: true);
             // add the code to the template model
             templateModel["code"] = code;
             await _postmarkHelper.SendTemplatedEmail(EmailTemplates.PasswordResetTemplateMobile, email, templateModel);

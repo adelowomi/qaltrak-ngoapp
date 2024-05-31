@@ -59,4 +59,14 @@ public class IdentityController : StandardControllerBase
         var response = await _userService.UpdateUser(model);
         return Result(response);
     }
+
+    [HttpPost("add-to-platform-admin-role", Name = nameof(AddToPlatformAdminRole))]
+    [ProducesResponseType(typeof(StandardResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StandardResponse<bool>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AddToPlatformAdminRole([FromBody] string userId)
+    {
+        await _userService.AddUserToPlatformAdminROle(userId);
+        return Ok();
+    }
+    
 }

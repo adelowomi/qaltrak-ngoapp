@@ -12,4 +12,5 @@ public interface IUserService
     Task<StandardResponse<UserView>> RegisterUserAsync(UserModel model);
     Task<StandardResponse<UserView>> GetUserProfile();
     Task<StandardResponse<UserView>> UpdateUser(UserProfile model);
+    Task AddUserToPlatformAdminROle(string UserId);
 }

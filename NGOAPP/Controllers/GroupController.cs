@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace NGOAPP;
 
@@ -9,10 +10,12 @@ namespace NGOAPP;
 public class GroupController : StandardControllerBase
 {
     private readonly IGroupService _groupService;
+    private readonly PagingOptions _defaultPagingOptions;
 
-    public GroupController(IGroupService groupService)
+    public GroupController(IGroupService groupService, IOptions<PagingOptions> defaultPagingOptions)
     {
         _groupService = groupService;
+        _defaultPagingOptions = defaultPagingOptions.Value;
     }
 
     [HttpPost("create", Name = nameof(CreateGroup))]
@@ -48,6 +51,7 @@ public class GroupController : StandardControllerBase
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<GroupView>>), 500)]
     public async Task<ActionResult<StandardResponse<PagedCollection<GroupView>>>> ListGroups([FromQuery] PagingOptions _options)
     {
+        _options.Replace(_defaultPagingOptions);
         return Result(await _groupService.ListGroups(_options));
     }
 
@@ -93,6 +97,7 @@ public class GroupController : StandardControllerBase
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<GroupView>>), 500)]
     public async Task<ActionResult<StandardResponse<PagedCollection<GroupView>>>> GetGroupsFollowedByUser([FromQuery] PagingOptions pagingOptions)
     {
+        pagingOptions.Replace(_defaultPagingOptions);
         return Result(await _groupService.GetGroupsFollowedByUser(pagingOptions));
     }
 }
