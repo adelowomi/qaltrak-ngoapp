@@ -65,7 +65,12 @@ public class GroupService : IGroupService
         if (group == null)
             return StandardResponse<GroupView>.Error("Group not found", HttpStatusCode.NotFound);
 
+        var totalEvents = _eventRepository.Count(x => x.GroupId == group.Id);
+        var totalFollowers = _groupFollowRepository.Count(x => x.GroupId == group.Id);
+
         var groupView = group.Adapt<GroupView>();
+        groupView.TotalEvents = totalEvents;
+        groupView.TotalNumberOfFollowers = totalFollowers;
         return StandardResponse<GroupView>.Create(true, "Group retrieved successfully", groupView);
     }
 

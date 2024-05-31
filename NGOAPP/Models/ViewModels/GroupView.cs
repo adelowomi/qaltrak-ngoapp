@@ -11,4 +11,6 @@ public class GroupView : BaseViewModel
     public string? Commitment { get; set; }
     public DateTime DateCreated { get; set; }
     public int TotalNumberOfFollowers { get; set; }
+    public int TotalEvents { get; set; }
+    public int TotalSessions { get; set; }
 }
