@@ -9,4 +9,6 @@ public class GroupDashboardView
     public int TotalFollowers { get; set; }
     public List<EventView> UpcomingEvents { get; set; }
     public List<EventView> TotalPerformingEventsPerResgistration { get; set; }
+    public int TotalGroupsCreated { get; set; }
+    public int TotalNumberOfAllFOllowers { get; set; }
 }

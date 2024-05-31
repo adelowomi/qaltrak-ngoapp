@@ -39,10 +39,11 @@ public class AdminService : IAdminService
 
         var newUser = model.Adapt<User>();
 
-        var randomPassword = _codeService.GenerateCode("DefaultPassword", 8);
+        var randomPasswordUpper = _codeService.GenerateCode("DefaultPassword", 8);
+        var randomPasswordLower = _codeService.GenerateCode("DefaultPassword", 4).ToLower();
         var randomFourDigit = _codeService.GenerateCode("DefaultPassword", 4, numberOnly: true);
 
-        var result = await _userManager.CreateAsync(newUser, $"{randomPassword}@{randomFourDigit}");
+        var result = await _userManager.CreateAsync(newUser, $"{randomPasswordUpper}{randomPasswordLower}@{randomFourDigit}");
 
         if (!result.Succeeded)
             return StandardResponse<UserView>.Error(result.Errors.FirstOrDefault()?.Description);

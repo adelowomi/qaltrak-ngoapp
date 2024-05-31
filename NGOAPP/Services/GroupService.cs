@@ -129,15 +129,17 @@ public class GroupService : IGroupService
         return StandardResponse<PagedCollection<FollowerView>>.Create(true, "Group followers retrieved successfully", pagedFollowers);
     }
 
-    public async Task<StandardResponse<GroupDashboardView>> GetGroupDashBoard(Guid groupId)
+    public async Task<StandardResponse<GroupDashboardView>> GetGroupDashBoard(Guid? groupId)
     {
-        var totalEvents = await GetTotalEvents(groupId);
-        var totalPastEvents = await GetTotalPastEvents(groupId);
-        var totalUpComingEvents = await GetTotalUpComingEvents(groupId);
-        var totalAttendeeRegistered = await GetTotalAttendeeRegistered(groupId);
-        var totalFollowers = await GetTotalFollowers(groupId);
-        var upComingEvents = await GetUpcomingEvents(groupId);
-        var topPerformingEvents = await GetTopPerformingEvents(groupId);
+        var totalEvents = groupId != null ? await GetTotalEvents((Guid)groupId) : 0;
+        var totalPastEvents =groupId != null ? await GetTotalPastEvents((Guid)groupId) : 0;
+        var totalUpComingEvents = groupId != null ? await GetTotalUpComingEvents((Guid)groupId) : 0;
+        var totalAttendeeRegistered = groupId != null ? await GetTotalAttendeeRegistered((Guid)groupId) : 0;
+        var totalFollowers = groupId != null ? await GetTotalFollowers((Guid)groupId) : 0;
+        var upComingEvents = groupId != null ? await GetUpcomingEvents((Guid)groupId) : new List<EventView>();
+        var topPerformingEvents =groupId != null ? await GetTopPerformingEvents((Guid)groupId) : new List<EventView>();
+        var totalGroupsCreated = _groupRepository.Count();
+        var TotalNumberOfFollowers = _groupFollowRepository.Count() ;
 
         var groupDashboardView = new GroupDashboardView
         {
@@ -147,7 +149,9 @@ public class GroupService : IGroupService
             TotalAttendeeRegistered = totalAttendeeRegistered,
             TotalFollowers = totalFollowers,
             UpcomingEvents = upComingEvents,
-            TotalPerformingEventsPerResgistration = topPerformingEvents
+            TotalPerformingEventsPerResgistration = topPerformingEvents,
+            TotalGroupsCreated = totalGroupsCreated,
+            TotalNumberOfAllFOllowers = TotalNumberOfFollowers
         };
         return StandardResponse<GroupDashboardView>.Ok(groupDashboardView);
     }

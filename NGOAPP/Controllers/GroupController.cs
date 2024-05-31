@@ -55,6 +55,16 @@ public class GroupController : StandardControllerBase
         return Result(await _groupService.ListGroups(_options));
     }
 
+    [HttpGet("user/list/{userId}", Name = nameof(ListUserGroups))]
+    [ProducesResponseType(typeof(StandardResponse<List<GroupView>>), 200)]
+    [ProducesResponseType(typeof(StandardResponse<List<GroupView>>), 400)]
+    [ProducesResponseType(typeof(StandardResponse<List<GroupView>>), 500)]
+    public async Task<ActionResult<StandardResponse<List<GroupView>>>> ListUserGroups(Guid userId)
+    {
+        return Result(await _groupService.ListUserGroups(userId));
+    }
+
+    
     [HttpPost("follow/{groupId}", Name = nameof(FollowGroup))]
     [ProducesResponseType(typeof(StandardResponse<GroupView>), 200)]
     [ProducesResponseType(typeof(StandardResponse<GroupView>), 400)]
@@ -86,7 +96,7 @@ public class GroupController : StandardControllerBase
     [ProducesResponseType(typeof(StandardResponse<GroupDashboardView>), 200)]
     [ProducesResponseType(typeof(StandardResponse<GroupDashboardView>), 400)]
     [ProducesResponseType(typeof(StandardResponse<GroupDashboardView>), 500)]
-    public async Task<ActionResult<StandardResponse<GroupDashboardView>>> GetGroupDashBoard(Guid groupId)
+    public async Task<ActionResult<StandardResponse<GroupDashboardView>>> GetGroupDashBoard(Guid? groupId)
     {
         return Result(await _groupService.GetGroupDashBoard(groupId));
     }

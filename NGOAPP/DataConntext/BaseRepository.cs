@@ -48,6 +48,16 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
     }
 
     /// <summary>
+    /// Abstraction Method To Give Count Of Entitys
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    public int Count()
+    {
+        return _context.Set<T>().Count();
+    }
+
+    /// <summary>
     /// Method To Create Record
     /// </summary>
     /// <param name="entity"></param>

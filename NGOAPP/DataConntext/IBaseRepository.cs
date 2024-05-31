@@ -80,6 +80,13 @@ public interface IBaseRepository<T> where T : class
     int Count(Func<T, bool> predicate);
 
     /// <summary>
+    /// Count Entities Type 'T'
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    int Count();
+
+    /// <summary>
     /// Convert Entity To List
     /// </summary>
     /// <returns></returns>
