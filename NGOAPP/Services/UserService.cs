@@ -86,6 +86,7 @@ public class UserService : IUserService
         if (existingUser != null)
             return StandardResponse<UserView>.Error("User already exists");
 
+        userToCreate.UserName = model.Email;
         var result = await _userManager.CreateAsync(userToCreate, model.Password);
         if (!result.Succeeded)
             return StandardResponse<UserView>.Error(result.Errors.FirstOrDefault().Description);

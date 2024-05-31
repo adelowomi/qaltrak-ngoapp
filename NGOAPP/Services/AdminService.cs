@@ -38,6 +38,7 @@ public class AdminService : IAdminService
         }
 
         var newUser = model.Adapt<User>();
+        newUser.UserName = model.Email;
 
         var randomPasswordUpper = _codeService.GenerateCode("DefaultPassword", 8);
         var randomPasswordLower = _codeService.GenerateCode("DefaultPassword", 4).ToLower();
