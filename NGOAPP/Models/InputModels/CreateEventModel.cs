@@ -9,4 +9,5 @@ public class CreateEventModel
     public string Description { get; set; } 
     [Required]
     public Guid GroupId { get; set; }
+    public string? CoverImage { get; set; }
 }

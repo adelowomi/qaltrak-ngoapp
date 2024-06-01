@@ -9,6 +9,7 @@ public class Event : BaseModel
     public string Description { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public string? CoverImage { get; set; }
 
     // Option 1: Separate Longitude and Latitude properties
     public double? Longitude { get; set; }

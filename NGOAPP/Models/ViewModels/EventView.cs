@@ -41,4 +41,5 @@ public class EventView : BaseViewModel
     public List<ScheduleView> Schedules { get; set; }
     public List<ContactView> Contacts { get; set; }
     public Guid GroupId { get; set; }
+    public string? CoverImage { get; set; }
 }
