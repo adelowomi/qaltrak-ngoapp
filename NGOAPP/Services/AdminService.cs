@@ -124,12 +124,14 @@ public class AdminService : IAdminService
         var userView = existingUser.Adapt<UserView>();
         return StandardResponse<UserView>.Ok(userView);
     }
-
+ 
     public async Task<StandardResponse<PagedCollection<UserView>>> ListGroupUsers(PagingOptions pagingOptions, string searchQuery)
     {
         var groupUsers = _groupUserRepository.Query().Include(x => x.User).AsQueryable();
         groupUsers = FilterUsers(groupUsers, searchQuery);
-        var pagedGroupUsers = groupUsers.ToPagedCollection<GroupUser, UserView>(pagingOptions, Link.ToCollection(nameof(AdminController.ListGroupUsers)));
+        var paged = groupUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+        var users = paged.Select(x => x.User).AsQueryable();
+        var pagedGroupUsers = users.ToPagedCollection<User, UserView>(pagingOptions, Link.ToCollection(nameof(AdminController.ListGroupUsers)));
         return StandardResponse<PagedCollection<UserView>>.Ok(pagedGroupUsers);
     }
 
