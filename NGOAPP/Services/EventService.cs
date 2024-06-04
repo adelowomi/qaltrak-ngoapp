@@ -32,7 +32,7 @@ public class EventService : IEventService
     public async Task<StandardResponse<EventView>> CreateEvent(CreateEventModel model)
     {
         var newEvent = model.Adapt<Event>();
-        newEvent =  _eventRepository.CreateAndReturn(newEvent);
+        newEvent = _eventRepository.CreateAndReturn(newEvent);
         var eventView = _mapper.Map<EventView>(newEvent);
         return StandardResponse<EventView>.Create(true, "Event created successfully", eventView);
     }
@@ -49,7 +49,7 @@ public class EventService : IEventService
 
         if (model.Schedules != null && model.Schedules.Any())
             AddEventSchedules(model.Schedules, model.EventId);
-        
+
         if (model.Contacts != null && model.Contacts.Any())
             AddEventContacts(model.Contacts, model.EventId);
 
@@ -117,7 +117,15 @@ public class EventService : IEventService
     //TODO: add search and filter options to the list events method
     public async Task<StandardResponse<PagedCollection<EventView>>> ListEvents(PagingOptions _options, EventFilterOptions filterOptions)
     {
-        var events = _eventRepository.Query().Include(x => x.Locations).Include(x => x.Schedules).Include(x => x.Contacts).OrderByDescending(x => x.DateCreated).AsQueryable();
+        var events = _eventRepository.Query()
+                            .Include(x => x.Locations)
+                            .Include(x => x.Schedules)
+                            .Include(x => x.Contacts)
+                            .OrderByDescending(x => x.DateCreated)
+                            .AsQueryable()
+                            .ApplySort(_options.SortDirection, _options.SortField);
+
+        events = SearchEvents(events,_options.SearchQuery);
         events = FilterEvents(events, filterOptions);
         var pagedEvents = events.ToPagedCollection<Event, EventView>(_options, Link.ToCollection(nameof(EventController.ListEvents)));
         return StandardResponse<PagedCollection<EventView>>.Create(true, "Events retrieved successfully", pagedEvents);
@@ -141,7 +149,7 @@ public class EventService : IEventService
 
 
     #region Private Methods
-    private IQueryable<Event> FilterEvents(IQueryable<Event> events ,EventFilterOptions filterOptions)
+    private IQueryable<Event> FilterEvents(IQueryable<Event> events, EventFilterOptions filterOptions)
     {
         if (filterOptions.EventTypeId.HasValue)
             events = events.Where(x => x.EventTypeId == filterOptions.EventTypeId);
@@ -160,12 +168,21 @@ public class EventService : IEventService
 
         return events;
     }
+
+    private IQueryable<Event> SearchEvents(IQueryable<Event> events, string searchQuery)
+    {
+        if (string.IsNullOrEmpty(searchQuery))
+            return events;
+
+        var query = searchQuery.ToLower();
+        return events.Where(x => x.Title.ToLower().Contains(query) || x.Description.ToLower().Contains(query));
+    }
     #endregion
 
 
     // private methods for processing schedules, locations, contacts, sessions, speakers and other related entities
     #region Private Methods
-    private  List<Location> AddEventLocations(List<LocationModel> locations, Guid eventId)
+    private List<Location> AddEventLocations(List<LocationModel> locations, Guid eventId)
     {
         var eventLocations = locations.Adapt<List<Location>>();
         eventLocations.ForEach(x => x.EventId = eventId);
@@ -179,10 +196,10 @@ public class EventService : IEventService
         return _scheduleRepository.CreateMultiple(eventSchedules);
     }
 
-    private  List<Session> AddEventSessions(List<SessionModel> sessions)
+    private List<Session> AddEventSessions(List<SessionModel> sessions)
     {
         var eventSessions = sessions.Adapt<List<Session>>();
-        return  _sessionRepository.CreateMultiple(eventSessions);
+        return _sessionRepository.CreateMultiple(eventSessions);
     }
 
     private List<Speaker> AddEventSpeakers(List<SpeakerModel> speakers)

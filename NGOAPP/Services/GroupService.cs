@@ -76,7 +76,8 @@ public class GroupService : IGroupService
 
     public async Task<StandardResponse<PagedCollection<GroupView>>> ListGroups(PagingOptions pagingOptions)
     {
-        var groups = _groupRepository.Query().OrderByDescending(x => x.DateCreated).AsQueryable();
+        var groups = _groupRepository.Query().OrderByDescending(x => x.DateCreated).AsQueryable()
+        .ApplySort(pagingOptions.SortDirection, pagingOptions.SortField);;
         var pagedGroups = groups.ToPagedCollection<Group, GroupView>(pagingOptions, Link.ToCollection(nameof(GroupController.ListGroups)));
         // get the count of followers for each group and add to the group view
         pagedGroups.Value.ToList().ForEach(x =>
