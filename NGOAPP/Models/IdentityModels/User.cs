@@ -28,7 +28,8 @@ namespace NGOAPP.Models.IdentityModels
         public string? PostalCode { get; set; }
         public string? Department { get; set; }
         public ICollection<Group>? Groups { get; set; }
-
+        [NotMapped]
+        public List<string> Roles { get; set; } = new List<string>();
     }
 }
 

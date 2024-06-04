@@ -16,8 +16,9 @@ public class AdminService : IAdminService
     private readonly RoleManager<Role> _roleManager;
     private readonly IBaseRepository<AdminSchedule> _adminScheduleRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IServiceProvider _serviceProvider;
 
-    public AdminService(UserManager<User> userManager, IBaseRepository<GroupUser> groupUserRepository, ICodeService codeService, RoleManager<Role> roleManager, IBaseRepository<AdminSchedule> adminScheduleRepository, IHttpContextAccessor httpContextAccessor)
+    public AdminService(UserManager<User> userManager, IBaseRepository<GroupUser> groupUserRepository, ICodeService codeService, RoleManager<Role> roleManager, IBaseRepository<AdminSchedule> adminScheduleRepository, IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider)
     {
         _userManager = userManager;
         _groupUserRepository = groupUserRepository;
@@ -25,6 +26,7 @@ public class AdminService : IAdminService
         _roleManager = roleManager;
         _adminScheduleRepository = adminScheduleRepository;
         _httpContextAccessor = httpContextAccessor;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task<StandardResponse<UserView>> CreateUser(AdminModel model)
@@ -32,6 +34,7 @@ public class AdminService : IAdminService
         var existingUser = await _userManager.FindByEmailAsync(model.Email);
         if (existingUser != null)
         {
+            var added = _userManager.AddToRoleAsync(existingUser, model.Role).Result;
             var existingGroupUser = _groupUserRepository.Query().FirstOrDefault(x => x.UserId == existingUser.Id && x.GroupId == model.GroupId);
             if (existingGroupUser != null)
                 return StandardResponse<UserView>.Error("User already exists in the group");
@@ -124,14 +127,51 @@ public class AdminService : IAdminService
         var userView = existingUser.Adapt<UserView>();
         return StandardResponse<UserView>.Ok(userView);
     }
+
+    public async Task<StandardResponse<UserView>> RemoveUserFromGroup(Guid userId, Guid groupId)
+    {
+        var existingUser = await _userManager.FindByIdAsync(userId.ToString());
+        if (existingUser == null)
+            return StandardResponse<UserView>.Error("User not found");
+
+        var existingGroupUser = _groupUserRepository.Query().FirstOrDefault(x => x.UserId == userId && x.GroupId == groupId);
+        if (existingGroupUser == null)
+            return StandardResponse<UserView>.Error("User does not exist in the group");
+
+        _groupUserRepository.Delete(existingGroupUser);
+        var userView = existingUser.Adapt<UserView>();
+        return StandardResponse<UserView>.Ok(userView);
+    }
  
     public async Task<StandardResponse<PagedCollection<UserView>>> ListGroupUsers(PagingOptions pagingOptions, string searchQuery)
     {
-        var groupUsers = _groupUserRepository.Query().Include(x => x.User).AsQueryable();
+        var groupUsers = _groupUserRepository.Query()
+            .Include(x => x.User)
+            .AsQueryable();
+
         groupUsers = FilterUsers(groupUsers, searchQuery);
-        var paged = groupUsers.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
-        var users = paged.Select(x => x.User).AsQueryable();
-        var pagedGroupUsers = users.ToPagedCollection<User, UserView>(pagingOptions, Link.ToCollection(nameof(AdminController.ListGroupUsers)));
+
+        var paged = groupUsers
+            .Skip(pagingOptions.Offset.Value)
+            .Take(pagingOptions.Limit.Value);
+
+        var users = paged
+            .Select(x => x.User)
+            .AsQueryable();
+
+        var pagedGroupUsers = users
+            .ToPagedCollection<User, UserView>(pagingOptions, Link.ToCollection(nameof(AdminController.ListGroupUsers)));
+
+        foreach (var user in pagedGroupUsers.Value)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var thisUser = await userManager.FindByIdAsync(user.Id.ToString());
+                var roles = await userManager.GetRolesAsync(thisUser);
+                user.Roles = roles.ToList();
+            }
+        }
         return StandardResponse<PagedCollection<UserView>>.Ok(pagedGroupUsers);
     }
 

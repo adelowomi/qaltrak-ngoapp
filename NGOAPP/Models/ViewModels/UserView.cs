@@ -5,6 +5,7 @@ public class UserView
     public Guid Id { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+    public string? Email { get; set; }
     public string? FullName => $"{FirstName} {LastName}";
     public string? OtherNames { get; set; }
     public string? Bio { get; set; }
@@ -20,4 +21,5 @@ public class UserView
     public string? Department { get; set; }
     public string? PhoneNumber { get; set; }
     public List<string> Roles { get; set; }
+    public DateTime DateCreated { get; set; }
 }

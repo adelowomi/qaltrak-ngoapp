@@ -45,6 +45,15 @@ public class AdminController : StandardControllerBase
         return Result(await _adminService.AddUserToGroup(userId, groupId));
     }
 
+    [HttpPost("remove/user/{userId}/group/{groupId}", Name = (nameof(RemoveUserFromGroup)))]
+    [ProducesResponseType(typeof(StandardResponse<UserView>), 200)]
+    [ProducesResponseType(typeof(StandardResponse<UserView>), 400)]
+    [ProducesResponseType(typeof(StandardResponse<UserView>), 500)]
+    public async Task<ActionResult<StandardResponse<UserView>>> RemoveUserFromGroup(Guid userId, Guid groupId)
+    {
+        return Result(await _adminService.RemoveUserFromGroup(userId, groupId));
+    }
+
     [HttpGet("list/group/users", Name = (nameof(ListGroupUsers)))]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<UserView>>), 200)]
     [ProducesResponseType(typeof(StandardResponse<PagedCollection<UserView>>), 400)]

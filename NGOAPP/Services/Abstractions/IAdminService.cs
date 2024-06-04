@@ -9,4 +9,5 @@ public interface IAdminService
     Task<StandardResponse<AdminScheduleModel>> CreateAdminSchedule(AdminScheduleModel model);
     Task<StandardResponse<List<AdminScheduleModel>>> ListAdminSchedulesForCurrentMonth(int currentMonth = 0);
     Task<StandardResponse<AdminScheduleModel>> GetAdminSchedule(Guid scheduleId);
+    Task<StandardResponse<UserView>> RemoveUserFromGroup(Guid userId, Guid groupId);
 }
