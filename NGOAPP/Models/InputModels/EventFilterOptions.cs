@@ -7,4 +7,5 @@ public class EventFilterOptions
     public int? EventSubCategoryId { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+    public Guid? GroupId { get; set; }
 }

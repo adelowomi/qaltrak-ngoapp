@@ -154,6 +154,9 @@ public class EventService : IEventService
     #region Private Methods
     private IQueryable<Event> FilterEvents(IQueryable<Event> events, EventFilterOptions filterOptions)
     {
+        if (filterOptions.GroupId.HasValue)
+            events = events.Where(x => x.GroupId == filterOptions.GroupId);
+        
         if (filterOptions.EventTypeId.HasValue)
             events = events.Where(x => x.EventTypeId == filterOptions.EventTypeId);
 
