@@ -43,4 +43,5 @@ public class EventView : BaseViewModel
     public Guid GroupId { get; set; }
     public string? CoverImage { get; set; }
     public GroupView Group { get; set; }
+    public string? Status { get; set; }
 }

@@ -33,6 +33,7 @@ public class EventService : IEventService
     {
         var newEvent = model.Adapt<Event>();
         newEvent = _eventRepository.CreateAndReturn(newEvent);
+        newEvent.StatusId = (int)Statuses.Pending;
         var eventView = _mapper.Map<EventView>(newEvent);
         return StandardResponse<EventView>.Create(true, "Event created successfully", eventView);
     }
@@ -99,6 +100,8 @@ public class EventService : IEventService
         existingEvent.PublishDate = model.PublishDate;
         existingEvent.IsPrivate = model.IsPrivate;
         existingEvent.IsPublished = model.PublishNow;
+        if(model.PublishNow)
+            existingEvent.StatusId = (int)Statuses.Published;
         _eventRepository.Update(existingEvent);
         var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event published successfully", eventView);

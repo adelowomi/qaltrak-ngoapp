@@ -1,4 +1,5 @@
-﻿using NGOAPP.Models.AppModels;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using NGOAPP.Models.AppModels;
 using NGOAPP.Models.IdentityModels;
 
 namespace NGOAPP;
@@ -49,4 +50,7 @@ public class Event : BaseModel
     public User User { get; set; }
     public Guid? GroupId { get; set; }
     public Group Group { get; set; }
+    public int? StatusId { get; set; } = (int)Statuses.Upcoming;
+    [ForeignKey(nameof(StatusId))]
+    public Status Status { get; set; }
 }

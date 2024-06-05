@@ -28,6 +28,9 @@ public class MappingProfiles: Profile
 
         CreateMap<GroupUser, UserView>()
             .ConstructUsing((src, dest) => dest.Mapper.Map<UserView>(src.User));
+
+        // always map the status name from an object of type Status to a string
+        CreateMap<Status, string>().ConvertUsing(s => s.Name);
     }
 
 }
