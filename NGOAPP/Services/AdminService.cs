@@ -3,6 +3,7 @@ using System.Net;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NGOAPP.Models.IdentityModels;
 using NGOAPP.Services;
 
@@ -17,8 +18,10 @@ public class AdminService : IAdminService
     private readonly IBaseRepository<AdminSchedule> _adminScheduleRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IServiceProvider _serviceProvider;
+    private readonly AppSettings _appSettings;
+    private readonly IPostmarkHelper _postmarkHelper;
 
-    public AdminService(UserManager<User> userManager, IBaseRepository<GroupUser> groupUserRepository, ICodeService codeService, RoleManager<Role> roleManager, IBaseRepository<AdminSchedule> adminScheduleRepository, IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider)
+    public AdminService(UserManager<User> userManager, IBaseRepository<GroupUser> groupUserRepository, ICodeService codeService, RoleManager<Role> roleManager, IBaseRepository<AdminSchedule> adminScheduleRepository, IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider, IOptions<AppSettings> appSettings, IPostmarkHelper postmarkHelper)
     {
         _userManager = userManager;
         _groupUserRepository = groupUserRepository;
@@ -27,6 +30,8 @@ public class AdminService : IAdminService
         _adminScheduleRepository = adminScheduleRepository;
         _httpContextAccessor = httpContextAccessor;
         _serviceProvider = serviceProvider;
+        _appSettings = appSettings.Value;
+        _postmarkHelper = postmarkHelper;
     }
 
     public async Task<StandardResponse<UserView>> CreateUser(AdminModel model)
@@ -72,6 +77,16 @@ public class AdminService : IAdminService
             }
         }
 
+        // generate password reset token and send to user
+        var token = await _userManager.GeneratePasswordResetTokenAsync(newUser);
+        var link = $"{_appSettings.FrontEndUrl}/password/reset/{token}?email={newUser.Email}";
+        var templateModel = new Dictionary<string, string>
+        {
+            { "code", token },
+            { "username", newUser.FirstName},
+            { "link", link }
+        };
+        await _postmarkHelper.SendTemplatedEmail(EmailTemplates.AdminUserInviteTemplate, newUser.Email, templateModel);
         var userView = newUser.Adapt<UserView>();
         return StandardResponse<UserView>.Ok(userView);
     }
@@ -142,7 +157,7 @@ public class AdminService : IAdminService
         var userView = existingUser.Adapt<UserView>();
         return StandardResponse<UserView>.Ok(userView);
     }
- 
+
     public async Task<StandardResponse<PagedCollection<UserView>>> ListGroupUsers(PagingOptions pagingOptions, string searchQuery)
     {
         var groupUsers = _groupUserRepository.Query()
@@ -206,7 +221,7 @@ public class AdminService : IAdminService
         return StandardResponse<AdminScheduleModel>.Ok(adminScheduleModel);
     }
 
-    private  IQueryable<GroupUser> FilterUsers(IQueryable<GroupUser> users, string searchQuery)
+    private IQueryable<GroupUser> FilterUsers(IQueryable<GroupUser> users, string searchQuery)
     {
         if (!string.IsNullOrEmpty(searchQuery))
             users = users.Where(x => x.User.Email.Contains(searchQuery) || x.User.PhoneNumber.Contains(searchQuery) || x.User.FirstName.Contains(searchQuery) || x.User.LastName.Contains(searchQuery));
