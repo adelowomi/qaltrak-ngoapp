@@ -32,8 +32,9 @@ public class EventService : IEventService
     public async Task<StandardResponse<EventView>> CreateEvent(CreateEventModel model)
     {
         var newEvent = model.Adapt<Event>();
-        newEvent = _eventRepository.CreateAndReturn(newEvent);
         newEvent.StatusId = (int)Statuses.Pending;
+        newEvent = _eventRepository.CreateAndReturn(newEvent);
+        newEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == newEvent.Id);
         var eventView = _mapper.Map<EventView>(newEvent);
         return StandardResponse<EventView>.Create(true, "Event created successfully", eventView);
     }
@@ -57,6 +58,7 @@ public class EventService : IEventService
         existingEvent.StartDate = model.StartDate;
         existingEvent.EndDate = model.EndDate;
         _eventRepository.Update(existingEvent);
+        existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
         var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event details updated successfully", eventView);
     }
@@ -69,7 +71,7 @@ public class EventService : IEventService
 
         var newEventTickets = model.Adapt<List<EventTicket>>();
         newEventTickets = _eventTicketRepository.CreateMultiple(newEventTickets);
-
+        existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
         var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event tickets updated successfully", eventView);
     }
@@ -84,6 +86,7 @@ public class EventService : IEventService
         existingEvent.AttendeesCanVolunteer = model.AttendeesCanVolunteer;
         existingEvent.QuestionsForAttendees = model.QuestionsForAttendees;
         _eventRepository.Update(existingEvent);
+        existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
         var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event order form details updated successfully", eventView);
     }
@@ -103,6 +106,7 @@ public class EventService : IEventService
         if(model.PublishNow)
             existingEvent.StatusId = (int)Statuses.Published;
         _eventRepository.Update(existingEvent);
+        existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
         var eventView = _mapper.Map<EventView>(existingEvent);
         return StandardResponse<EventView>.Create(true, "Event published successfully", eventView);
     }
