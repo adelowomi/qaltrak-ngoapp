@@ -137,13 +137,13 @@ public class GroupService : IGroupService
 
     public async Task<StandardResponse<GroupDashboardView>> GetGroupDashBoard(Guid? groupId)
     {
-        var totalEvents = groupId != null ? await GetTotalEvents((Guid)groupId) : 0;
-        var totalPastEvents =groupId != null ? await GetTotalPastEvents((Guid)groupId) : 0;
-        var totalUpComingEvents = groupId != null ? await GetTotalUpComingEvents((Guid)groupId) : 0;
-        var totalAttendeeRegistered = groupId != null ? await GetTotalAttendeeRegistered((Guid)groupId) : 0;
-        var totalFollowers = groupId != null ? await GetTotalFollowers((Guid)groupId) : 0;
-        var upComingEvents = groupId != null ? await GetUpcomingEvents((Guid)groupId) : new List<EventView>();
-        var topPerformingEvents =groupId != null ? await GetTopPerformingEvents((Guid)groupId) : new List<EventView>();
+        var totalEvents = await GetTotalEvents(groupId);
+        var totalPastEvents =await GetTotalPastEvents(groupId);
+        var totalUpComingEvents = await GetTotalUpComingEvents(groupId);
+        var totalAttendeeRegistered = await GetTotalAttendeeRegistered(groupId);
+        var totalFollowers = await GetTotalFollowers(groupId);
+        var upComingEvents = await GetUpcomingEvents(groupId);
+        var topPerformingEvents =await GetTopPerformingEvents(groupId);
         var totalGroupsCreated = _groupRepository.Count();
         var TotalNumberOfFollowers = _groupFollowRepository.Count() ;
 
@@ -170,38 +170,50 @@ public class GroupService : IGroupService
         return StandardResponse<PagedCollection<GroupView>>.Create(true, "Groups followed by user retrieved successfully", pagedGroups);
     }
 
-    private async Task<int> GetTotalEvents(Guid groupId)
+    private async Task<int> GetTotalEvents(Guid? groupId)
     {
+        if(groupId == Guid.Empty || groupId == null)
+            return _eventRepository.Count();
         return await _eventRepository.Query().CountAsync(x => x.GroupId == groupId);
     }
 
-    private async Task<int> GetTotalPastEvents(Guid groupId)
+    private async Task<int> GetTotalPastEvents(Guid? groupId)
     {
+        if(groupId == Guid.Empty || groupId == null)
+            return _eventRepository.Query().Count(x => x.EndDate < DateTime.Now);
         return await _eventRepository.Query().CountAsync(x => x.GroupId == groupId && x.EndDate < DateTime.Now);
     }
 
-    private async Task<int> GetTotalUpComingEvents(Guid groupId)
+    private async Task<int> GetTotalUpComingEvents(Guid? groupId)
     {
+        if(groupId == Guid.Empty || groupId == null)
+            return _eventRepository.Query().Count(x => x.StartDate > DateTime.Now);
         return await _eventRepository.Query().CountAsync(x => x.GroupId == groupId && x.StartDate > DateTime.Now);
     }
 
-    private async Task<int> GetTotalAttendeeRegistered(Guid groupId)
+    private async Task<int> GetTotalAttendeeRegistered(Guid? groupId)
     {
+        if(groupId == Guid.Empty || groupId == null)
+            return _ticketRepository.Query().Include(x => x.Event).Count();
         return await _ticketRepository.Query().Include(x => x.Event).CountAsync(x => x.Event.GroupId == groupId);
     }
 
-    private async Task<int> GetTotalFollowers(Guid groupId)
+    private async Task<int> GetTotalFollowers(Guid? groupId)
     {
+        if(groupId == Guid.Empty || groupId == null)
+            return _groupFollowRepository.Count();
         return await _groupFollowRepository.Query().CountAsync(x => x.GroupId == groupId);
     }
 
-    private async Task<List<EventView>> GetUpcomingEvents(Guid groupId)
+    private async Task<List<EventView>> GetUpcomingEvents(Guid? groupId)
     {
+        if(groupId == Guid.Empty || groupId == null)
+            return _eventRepository.Query().Where(x => x.StartDate > DateTime.Now).Take(10).ToList().Adapt<List<EventView>>();
         var events = _eventRepository.Query().Where(x => x.GroupId == groupId && x.StartDate > DateTime.Now).Take(10).ToList();
         return events.Adapt<List<EventView>>();
     }
 
-    private async Task<List<EventView>> GetTopPerformingEvents(Guid groupId)
+    private async Task<List<EventView>> GetTopPerformingEvents(Guid? groupId)
     {
         //get event id of highest number of tickets sold
         var eventIds = _ticketRepository.Query().GroupBy(x => x.EventId).OrderByDescending(x => x.Count()).Select(x => x.Key).Take(10).ToList();
