@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RESTCountries.NET.Models;
+using RESTCountries.NET.Services;
 
 namespace NGOAPP;
 
@@ -56,5 +58,14 @@ public class UtilityController : StandardControllerBase
     public async Task<ActionResult<StandardResponse<List<BaseViewModelI>>>> GetEventSubCategories(Guid eventCategoryId)
     {
         return Ok(await _utilityService.GetEventSubCategories(eventCategoryId));
+    }
+
+    [HttpGet("countries", Name = nameof(GetCOuntries))]
+    [ProducesResponseType(typeof(StandardResponse<List<Country>>), 200)]
+    [ProducesResponseType(typeof(StandardResponse<List<Country>>), 400)]
+    [ProducesResponseType(typeof(StandardResponse<List<Country>>), 500)]
+    public async Task<ActionResult<StandardResponse<List<Country>>>> GetCOuntries()
+    {
+        return Ok(RestCountriesService.GetAllCountries());
     }
 }
