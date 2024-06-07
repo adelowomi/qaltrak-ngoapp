@@ -61,6 +61,7 @@ public class GroupService : IGroupService
 
     public async Task<StandardResponse<GroupView>> GetGroup(Guid groupId)
     {
+        var loggedInUser =  _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
         var group = _groupRepository.GetById(groupId);
         if (group == null)
             return StandardResponse<GroupView>.Error("Group not found", HttpStatusCode.NotFound);
@@ -69,6 +70,8 @@ public class GroupService : IGroupService
         var totalFollowers = _groupFollowRepository.Count(x => x.GroupId == group.Id);
 
         var groupView = group.Adapt<GroupView>();
+        var existingGroupFollow = _groupFollowRepository.Query().FirstOrDefault(x => x.GroupId == groupId && x.UserId == loggedInUser);
+        groupView.IsFollowing = existingGroupFollow != null;
         groupView.TotalEvents = totalEvents;
         groupView.TotalNumberOfFollowers = totalFollowers;
         return StandardResponse<GroupView>.Create(true, "Group retrieved successfully", groupView);

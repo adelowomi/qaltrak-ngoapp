@@ -82,5 +82,12 @@ public class EventController : StandardControllerBase
         return Result(await _eventService.ListEvents(_options, filterOptions));
     }
 
-
+    [HttpPost("register/{eventId}/{eventTicketId}", Name = nameof(RegisterToAttendEvent))]
+    [ProducesResponseType(typeof(StandardResponse<TicketView>), 200)]
+    [ProducesResponseType(typeof(StandardResponse<TicketView>), 400)]
+    [ProducesResponseType(typeof(StandardResponse<TicketView>), 500)]
+    public async Task<ActionResult<StandardResponse<TicketView>>> RegisterToAttendEvent(EventRegistrationModel model)
+    {
+        return Result(await _eventService.RegisterToAttendEventOrVolunteer(model));
+    }
 }

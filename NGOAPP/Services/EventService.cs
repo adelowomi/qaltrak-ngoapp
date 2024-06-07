@@ -1,5 +1,6 @@
 ﻿using System.Formats.Asn1;
 using System.Net;
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -15,9 +16,12 @@ public class EventService : IEventService
     private readonly IBaseRepository<Session> _sessionRepository;
     private readonly IBaseRepository<Speaker> _speakerRepository;
     private readonly IBaseRepository<EventTicket> _eventTicketRepository;
+    private readonly IBaseRepository<Ticket> _ticketRepository;
     private readonly IMapper _mapper;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IBaseRepository<EventVolunteer> _eventVolunteerRepository;
 
-    public EventService(IBaseRepository<Event> eventRepository, IBaseRepository<Location> locationRepository, IBaseRepository<Schedule> scheduleRepository, IBaseRepository<Contact> contactRepository, IBaseRepository<Session> sessionRepository, IBaseRepository<Speaker> speakerRepository, IBaseRepository<EventTicket> eventTicketRepository, IMapper mapper)
+    public EventService(IBaseRepository<Event> eventRepository, IBaseRepository<Location> locationRepository, IBaseRepository<Schedule> scheduleRepository, IBaseRepository<Contact> contactRepository, IBaseRepository<Session> sessionRepository, IBaseRepository<Speaker> speakerRepository, IBaseRepository<EventTicket> eventTicketRepository, IMapper mapper, IBaseRepository<Ticket> ticketRepository, IHttpContextAccessor httpContextAccessor, IBaseRepository<EventVolunteer> eventVolunteerRepository)
     {
         _eventRepository = eventRepository;
         _locationRepository = locationRepository;
@@ -27,6 +31,9 @@ public class EventService : IEventService
         _speakerRepository = speakerRepository;
         _eventTicketRepository = eventTicketRepository;
         _mapper = mapper;
+        _ticketRepository = ticketRepository;
+        _httpContextAccessor = httpContextAccessor;
+        _eventVolunteerRepository = eventVolunteerRepository;
     }
 
     public async Task<StandardResponse<EventView>> CreateEvent(CreateEventModel model)
@@ -116,8 +123,14 @@ public class EventService : IEventService
         var existingEvent = _eventRepository.Query().Include(x => x.Locations).Include(x => x.Schedules).Include(x => x.Contacts).Include(x => x.Status).FirstOrDefault(x => x.Id == eventId);
         if (existingEvent == null)
             return StandardResponse<EventView>.Error("Event not found", HttpStatusCode.NotFound);
+            
+        var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var existingTicket = _ticketRepository.Query().FirstOrDefault(x => x.EventId == eventId && x.UserId == loggedInUserId);
 
         var eventView = _mapper.Map<EventView>(existingEvent);
+
+        if (existingTicket != null)
+            eventView.Registered = true;
         return StandardResponse<EventView>.Create(true, "Event retrieved successfully", eventView);
     }
 
@@ -152,6 +165,52 @@ public class EventService : IEventService
         return StandardResponse<List<SpeakerView>>.Create(true, "Event speakers retrieved successfully", speakerViews);
     }
 
+    public async Task<StandardResponse<bool>> RegisterToAttendEventOrVolunteer(EventRegistrationModel model)
+    {
+        var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var existingTicket = _ticketRepository.Query().FirstOrDefault(x => x.EventId == model.EventId && x.UserId == userId);
+
+        if (existingTicket !=   null &&  model.IsAttending)
+            return StandardResponse<bool>.Error("You have already registered for this event", HttpStatusCode.BadRequest);
+        
+        var existingVolunteer = _eventVolunteerRepository.Query().FirstOrDefault(x => x.EventId == model.EventId && x.UserId == userId);
+
+        if (existingVolunteer != null && model.IsVolunteering)
+            return StandardResponse<bool>.Error("You have already volunteered for this event", HttpStatusCode.BadRequest);
+
+        var eventTicket = _eventTicketRepository.GetById(model.EventTicketId);
+
+        if (eventTicket == null)
+            return StandardResponse<bool>.Error("Event ticket not found", HttpStatusCode.NotFound);
+
+        if(model.IsAttending)
+        {
+            var newTicket = new Ticket
+            {
+                EventId = model.EventId,
+                UserId = userId,
+                EventTicketId = model.EventTicketId,
+                TicketTypeId = eventTicket.TicketTypeId,
+                Price = eventTicket.Price,
+                Free = eventTicket.Price == 0 ? true : false,
+            };
+
+            newTicket = _ticketRepository.CreateAndReturn(newTicket);
+        }
+        
+        if(model.IsVolunteering)
+        {
+            var newVolunteer = new EventVolunteer
+            {
+                EventId = model.EventId,
+                UserId = userId
+            };
+
+            newVolunteer = _eventVolunteerRepository.CreateAndReturn(newVolunteer);
+        }
+
+        return StandardResponse<bool>.Ok(true);
+    }
     // update event details, tickets, order form details
 
 

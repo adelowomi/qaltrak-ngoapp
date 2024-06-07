@@ -43,4 +43,5 @@ public class Context : IdentityDbContext<User, Role, Guid>
     public DbSet<GroupFollow> GroupFollows { get; set; }
     public DbSet<GroupUser> GroupUsers { get; set; }
     public DbSet<AdminSchedule> AdminSchedules { get; set; }
+    public DbSet<EventVolunteer> EventVolunteers { get; set; }
 }

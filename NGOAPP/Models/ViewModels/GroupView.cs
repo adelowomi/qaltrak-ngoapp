@@ -13,4 +13,5 @@ public class GroupView : BaseViewModel
     public int TotalNumberOfFollowers { get; set; }
     public int TotalEvents { get; set; }
     public int TotalSessions { get; set; }
+    public bool IsFollowing { get; set; }
 }

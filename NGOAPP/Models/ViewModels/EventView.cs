@@ -44,4 +44,6 @@ public class EventView : BaseViewModel
     public string? CoverImage { get; set; }
     public GroupView Group { get; set; }
     public string? Status { get; set; }
+    public bool? Registered { get; set; }
+    public bool? Volunteered { get; set; }
 }
