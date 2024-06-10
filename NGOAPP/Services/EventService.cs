@@ -120,7 +120,7 @@ public class EventService : IEventService
 
     public async Task<StandardResponse<EventView>> GetEventById(Guid eventId)
     {
-        var existingEvent = _eventRepository.Query().Include(x => x.Locations).Include(x => x.Schedules).Include(x => x.Contacts).Include(x => x.Status).FirstOrDefault(x => x.Id == eventId);
+        var existingEvent = _eventRepository.Query().Include(x => x.Locations).Include(x => x.EventTicket).Include(x => x.Schedules).Include(x => x.Contacts).Include(x => x.Status).FirstOrDefault(x => x.Id == eventId);
         if (existingEvent == null)
             return StandardResponse<EventView>.Error("Event not found", HttpStatusCode.NotFound);
             
