@@ -17,6 +17,7 @@ public static class AppServiceExtensions
         services.AddTransient<IEventService, EventService>();
         services.AddTransient<IGroupService, GroupService>();
         services.AddTransient<IAdminService, AdminService>();
+        services.AddTransient<IRSAEncryptionService, RSAEncryptionService>();
     }
 
 
