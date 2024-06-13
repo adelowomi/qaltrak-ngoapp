@@ -2,7 +2,8 @@
 
 public class EventTicketView
 {
-     public Guid EventId { get; set; }
+    public Guid Id { get; set; }
+    public Guid EventId { get; set; }
     public int TicketTypeId { get; set; }
     public int Quantity { get; set; }
     public int MaxQuantityPerOrder { get; set; }
