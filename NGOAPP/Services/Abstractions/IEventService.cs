@@ -10,5 +10,7 @@ public interface IEventService
     Task<StandardResponse<EventView>> GetEventById(Guid eventId);
     Task<StandardResponse<PagedCollection<EventView>>> ListEvents(PagingOptions _options, EventFilterOptions filterOptions);
     Task<StandardResponse<bool>> RegisterToAttendEventOrVolunteer(EventRegistrationModel model);
+    Task<StandardResponse<bool>> UnregisterFromEventOrVolunteer(EventRegistrationModel model);
+    Task<StandardResponse<PagedCollection<TicketView>>> ListUserTickets(PagingOptions _options);
 
 }

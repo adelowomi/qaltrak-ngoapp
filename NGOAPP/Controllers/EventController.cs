@@ -90,4 +90,23 @@ public class EventController : StandardControllerBase
     {
         return Result(await _eventService.RegisterToAttendEventOrVolunteer(model));
     }
+
+    [HttpPost("unregister/{eventId}/{eventTicketId}", Name = nameof(UnregisterFromEvent))]
+    [ProducesResponseType(typeof(StandardResponse<TicketView>), 200)]
+    [ProducesResponseType(typeof(StandardResponse<TicketView>), 400)]
+    [ProducesResponseType(typeof(StandardResponse<TicketView>), 500)]
+    public async Task<ActionResult<StandardResponse<TicketView>>> UnregisterFromEvent(EventRegistrationModel model)
+    {
+        return Result(await _eventService.UnregisterFromEventOrVolunteer(model));
+    }
+
+    [HttpGet("tickets", Name = nameof(ListUserTickets))]
+    [ProducesResponseType(typeof(StandardResponse<PagedCollection<TicketView>>), 200)]
+    [ProducesResponseType(typeof(StandardResponse<PagedCollection<TicketView>>), 400)]
+    [ProducesResponseType(typeof(StandardResponse<PagedCollection<TicketView>>), 500)]
+    public async Task<ActionResult<StandardResponse<PagedCollection<TicketView>>>> ListUserTickets([FromQuery] PagingOptions _options)
+    {
+        _options.Replace(_defaultPagingOptions);
+        return Result(await _eventService.ListUserTickets(_options));
+    }
 }

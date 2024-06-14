@@ -211,6 +211,30 @@ public class EventService : IEventService
 
         return StandardResponse<bool>.Ok(true);
     }
+
+    public async Task<StandardResponse<bool>> UnregisterFromEventOrVolunteer(EventRegistrationModel model)
+    {
+        var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var existingTicket = _ticketRepository.Query().FirstOrDefault(x => x.EventId == model.EventId && x.UserId == userId);
+
+        if (existingTicket != null && model.IsAttending)
+            _ticketRepository.Delete(existingTicket);
+
+        var existingVolunteer = _eventVolunteerRepository.Query().FirstOrDefault(x => x.EventId == model.EventId && x.UserId == userId);
+
+        if (existingVolunteer != null && model.IsVolunteering)
+            _eventVolunteerRepository.Delete(existingVolunteer);
+
+        return StandardResponse<bool>.Ok(true);
+    }
+
+    public async Task<StandardResponse<PagedCollection<TicketView>>> ListUserTickets(PagingOptions _options)
+    {
+        var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var tickets = _ticketRepository.Query().Where(x => x.UserId == userId).Include(x => x.Event).Include(x => x.EventTicket).AsQueryable().ApplySort(_options.SortDirection, _options.SortField);
+        var pagedTickets = tickets.ToPagedCollection<Ticket, TicketView>(_options, Link.ToCollection(nameof(EventController.ListUserTickets)));
+        return StandardResponse<PagedCollection<TicketView>>.Create(true, "Tickets retrieved successfully", pagedTickets);
+    }
     // update event details, tickets, order form details
 
 
