@@ -3,7 +3,7 @@ using NGOAPP.Models.IdentityModels;
 
 namespace NGOAPP;
 
-public class MappingProfiles: Profile
+public class MappingProfiles : Profile
 {
     public MappingProfiles()
     {
@@ -25,6 +25,7 @@ public class MappingProfiles: Profile
         CreateMap<EventSubCategory, BaseViewModelI>();
         CreateMap<Schedule, ScheduleView>();
         CreateMap<Group, GroupView>();
+        CreateMap<Ticket, TicketView>();
 
         CreateMap<GroupUser, UserView>()
             .ConstructUsing((src, dest) => dest.Mapper.Map<UserView>(src.User));

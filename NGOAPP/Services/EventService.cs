@@ -126,11 +126,15 @@ public class EventService : IEventService
             
         var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
         var existingTicket = _ticketRepository.Query().FirstOrDefault(x => x.EventId == eventId && x.UserId == loggedInUserId);
+        var existingVolunteer = _eventVolunteerRepository.Query().FirstOrDefault(x => x.EventId == eventId && x.UserId == loggedInUserId);
 
         var eventView = _mapper.Map<EventView>(existingEvent);
 
         if (existingTicket != null)
             eventView.Registered = true;
+
+        if (existingVolunteer != null)
+            eventView.Volunteered = true;
         return StandardResponse<EventView>.Create(true, "Event retrieved successfully", eventView);
     }
 
