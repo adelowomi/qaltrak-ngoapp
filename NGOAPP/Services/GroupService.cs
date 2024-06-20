@@ -221,7 +221,7 @@ public class GroupService : IGroupService
         //get event id of highest number of tickets sold
         var eventIds = _ticketRepository.Query().GroupBy(x => x.EventId).OrderByDescending(x => x.Count()).Select(x => x.Key).Take(10).ToList();
         // get events with the highest number of tickets sold
-        var events = _eventRepository.Query().Where(x => eventIds.Contains(x.Id)).ToList();
+        var events = _eventRepository.Query().Include(x => x.Group).Where(x => eventIds.Contains(x.Id)).ToList();
         return events.Adapt<List<EventView>>();
     }
 }
