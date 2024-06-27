@@ -46,6 +46,21 @@ public class EventService : IEventService
         return StandardResponse<EventView>.Create(true, "Event created successfully", eventView);
     }
 
+    public async Task<StandardResponse<EventView>> UpdateEvent(UpdateEventModel model)
+    {
+        var existingEvent = _eventRepository.GetById(model.EventId);
+        if (existingEvent == null)
+            return StandardResponse<EventView>.Error("Event not found", HttpStatusCode.NotFound);
+
+        existingEvent.Title = model.Title;
+        existingEvent.Description = model.Description;
+        existingEvent.CoverImage = model.CoverImage;
+        _eventRepository.Update(existingEvent);
+        existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
+        var eventView = _mapper.Map<EventView>(existingEvent);
+        return StandardResponse<EventView>.Create(true, "Event updated successfully", eventView);
+    }
+
     public async Task<StandardResponse<EventView>> AddEventDetails(EventDetailsModel model)
     {
         var existingEvent = _eventRepository.GetById(model.EventId);
@@ -70,13 +85,163 @@ public class EventService : IEventService
         return StandardResponse<EventView>.Create(true, "Event details updated successfully", eventView);
     }
 
+    public async Task<StandardResponse<EventView>> UpdateEventDetails(UpdateEventDetailsModel model)
+    {
+        var existingEvent = _eventRepository.GetById(model.EventId);
+        if (existingEvent == null)
+            return StandardResponse<EventView>.Error("Event not found", HttpStatusCode.NotFound);
+
+        existingEvent.StartDate = model.StartDate;
+        existingEvent.EndDate = model.EndDate;
+        _eventRepository.Update(existingEvent);
+        existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
+        var eventView = _mapper.Map<EventView>(existingEvent);
+        return StandardResponse<EventView>.Create(true, "Event details updated successfully", eventView);
+    }
+
+    public async Task<StandardResponse<bool>> UpdateEventSchedule(List<UpdateScheduleModel> model)
+    {
+        foreach (var schedule in model)
+        {
+            if (schedule.ScheduleId == null || schedule.ScheduleId == Guid.Empty)
+            {
+                var newSchedule = schedule.Adapt<ScheduleModel>();
+                AddEventSchedules(new List<ScheduleModel> { newSchedule }, schedule.EventId);
+            }
+            if (schedule.ScheduleId != null || schedule.ScheduleId != Guid.Empty)
+            {
+                var existingSchedule = _scheduleRepository.Query().Include(x => x.Sessions).FirstOrDefault(x => x.Id == (Guid)schedule.ScheduleId);
+                if (existingSchedule == null)
+                    return StandardResponse<bool>.Error("Schedule not found", HttpStatusCode.NotFound);
+
+                existingSchedule.Name = schedule.Name;
+                if (schedule.Sessions != null && schedule.Sessions.Any())
+                {
+                    foreach (var session in schedule.Sessions)
+                    {
+                        if (session.SessionId == null || session.SessionId == Guid.Empty)
+                        {
+                            var newSession = session.Adapt<SessionModel>();
+                            newSession.ScheduleId = existingSchedule.Id;
+                            AddEventSessions(new List<SessionModel> { newSession });
+                        }
+                        if (session.SessionId != null || session.SessionId != Guid.Empty)
+                        {
+                            var existingSession = _sessionRepository.GetById((Guid)session.SessionId);
+                            if (existingSession == null)
+                                return StandardResponse<bool>.Error("Session not found", HttpStatusCode.NotFound);
+
+                            existingSession.DateModified = DateTime.Now;
+                            existingSession.Description = session.Description;
+                            existingSession.Start = session.StartDateTime;
+                            existingSession.End = session.EndDateTime;
+
+                            if (session.Speakers != null && session.Speakers.Any())
+                            {
+                                foreach (var speaker in session.Speakers)
+                                {
+                                    if (speaker.SpeakerId == null || speaker.SpeakerId == Guid.Empty)
+                                    {
+                                        var newSpeaker = speaker.Adapt<SpeakerModel>();
+                                        newSpeaker.SessionId = existingSession.Id;
+                                        AddEventSpeakers(new List<SpeakerModel> { newSpeaker });
+                                    }
+                                    if (speaker.SpeakerId != null || speaker.SpeakerId != Guid.Empty)
+                                    {
+                                        var existingSpeaker = _speakerRepository.Query().Include(x => x.Images).FirstOrDefault(x => x.Id ==(Guid)speaker.SpeakerId);
+                                        if (existingSpeaker == null)
+                                            return StandardResponse<bool>.Error("Speaker not found", HttpStatusCode.NotFound);
+
+                                        existingSpeaker.Name = speaker.Name;
+                                        existingSpeaker.Bio = speaker.Bio;
+                                        _speakerRepository.Update(existingSpeaker);
+                                    }
+                                }
+                            }
+
+
+                            _sessionRepository.Update(existingSession);
+                        }
+                    }
+                }
+                _scheduleRepository.Update(existingSchedule);
+            }
+        }
+
+        return StandardResponse<bool>.Create(true, "Event schedule updated successfully");
+    }
+
+    public async Task<StandardResponse<bool>> UpdateEventContacts(List<UpdateContactModel> model)
+    {
+        foreach (var contact in model)
+        {
+            if (contact.ContactId == null || contact.ContactId == Guid.Empty)
+            {
+                var newContact = contact.Adapt<ContactModel>();
+                AddEventContacts(new List<ContactModel> { newContact }, contact.EventId);
+            }
+            if (contact.ContactId != null || contact.ContactId != Guid.Empty)
+            {
+                var existingContact = _contactRepository.GetById((Guid)contact.ContactId);
+                if (existingContact == null)
+                    return StandardResponse<bool>.Error("Contact not found", HttpStatusCode.NotFound);
+
+                existingContact.Name = contact.Name;
+                existingContact.Email = contact.Email;
+                existingContact.Phone = contact.Phone;
+                _contactRepository.Update(existingContact);
+            }
+        }
+
+        return StandardResponse<bool>.Create(true, "Event contacts updated successfully");
+    }
+    public async Task<StandardResponse<bool>> UpdateEventOrderFormDetails(UpdateEventOrderFormModel model)
+    {
+        var existingEvent = _eventRepository.GetById(model.EventId);
+        if (existingEvent == null)
+            return StandardResponse<bool>.Error("Event not found", HttpStatusCode.NotFound);
+
+        existingEvent.NumberOfVolunteersNeeded = model.NumberOfVolunteersNeeded;
+        existingEvent.AttendeesCanVolunteer = model.AttendeesCanVolunteer;
+        existingEvent.QuestionsForAttendees = model.QuestionsForAttendees;
+        _eventRepository.Update(existingEvent);
+        return StandardResponse<bool>.Create(true, "Event order form details updated successfully");
+    }
+
+    public async Task<StandardResponse<bool>> UpdateEventLocations(List<UpdateLocationModel> model)
+    {
+        foreach (var location in model)
+        {
+            if (location.LocationId == null || location.LocationId == Guid.Empty)
+            {
+                var newLocation = location.Adapt<LocationModel>();
+                AddEventLocations(new List<LocationModel> { newLocation }, location.EventId);
+            }
+            if (location.LocationId != null || location.LocationId != Guid.Empty)
+            {
+                var existingLocation = _locationRepository.GetById((Guid)location.LocationId);
+                if (existingLocation == null)
+                    return StandardResponse<bool>.Error("Location not found", HttpStatusCode.NotFound);
+
+                existingLocation.Name = location.Name;
+                existingLocation.AddressLine = location.AddressLine;
+                existingLocation.Latitude = location.Latitude;
+                existingLocation.Longitude = location.Longitude;
+                existingLocation.Description = location.Description;
+                _locationRepository.Update(existingLocation);
+            }
+        }
+
+        return StandardResponse<bool>.Create(true, "Event location updated successfully");
+    }
+
     public async Task<StandardResponse<EventView>> AddEVentTickets(CreateEventTicketModel model)
     {
         var existingEvent = _eventRepository.GetById(model.EventId);
         if (existingEvent == null)
             return StandardResponse<EventView>.Error("Event not found", HttpStatusCode.NotFound);
 
-        var newEventTickets = model.Adapt<List<EventTicket>>();
+        var newEventTickets = model.Tickets.Adapt<List<EventTicket>>();
         newEventTickets = _eventTicketRepository.CreateMultiple(newEventTickets);
         existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
         var eventView = _mapper.Map<EventView>(existingEvent);
@@ -110,7 +275,7 @@ public class EventService : IEventService
         existingEvent.PublishDate = model.PublishDate;
         existingEvent.IsPrivate = model.IsPrivate;
         existingEvent.IsPublished = model.PublishNow;
-        if(model.PublishNow)
+        if (model.PublishNow)
             existingEvent.StatusId = (int)Statuses.Published;
         _eventRepository.Update(existingEvent);
         existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
@@ -118,12 +283,13 @@ public class EventService : IEventService
         return StandardResponse<EventView>.Create(true, "Event published successfully", eventView);
     }
 
+
     public async Task<StandardResponse<EventView>> GetEventById(Guid eventId)
     {
         var existingEvent = _eventRepository.Query().Include(x => x.Locations).Include(x => x.EventTicket).Include(x => x.Schedules).Include(x => x.Contacts).Include(x => x.Status).FirstOrDefault(x => x.Id == eventId);
         if (existingEvent == null)
             return StandardResponse<EventView>.Error("Event not found", HttpStatusCode.NotFound);
-            
+
         var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
         var existingTicket = _ticketRepository.Query().FirstOrDefault(x => x.EventId == eventId && x.UserId == loggedInUserId);
         var existingVolunteer = _eventVolunteerRepository.Query().FirstOrDefault(x => x.EventId == eventId && x.UserId == loggedInUserId);
@@ -145,11 +311,11 @@ public class EventService : IEventService
                             .Include(x => x.Locations)
                             .Include(x => x.Schedules)
                             .Include(x => x.Contacts)
-                            .OrderByDescending(x => x.DateCreated)
+                            .OrderByDescending(x => x.DateCreated.Date.DayOfYear)
                             .AsQueryable()
                             .ApplySort(_options.SortDirection, _options.SortField);
 
-        events = SearchEvents(events,_options.SearchQuery);
+        events = SearchEvents(events, _options.SearchQuery);
         events = FilterEvents(events, filterOptions);
         var pagedEvents = events.ToPagedCollection<Event, EventView>(_options, Link.ToCollection(nameof(EventController.ListEvents)));
         return StandardResponse<PagedCollection<EventView>>.Create(true, "Events retrieved successfully", pagedEvents);
@@ -174,9 +340,9 @@ public class EventService : IEventService
         var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
         var existingTicket = _ticketRepository.Query().FirstOrDefault(x => x.EventId == model.EventId && x.UserId == userId);
 
-        if (existingTicket !=   null &&  model.IsAttending)
+        if (existingTicket != null && model.IsAttending)
             return StandardResponse<bool>.Error("You have already registered for this event", HttpStatusCode.BadRequest);
-        
+
         var existingVolunteer = _eventVolunteerRepository.Query().FirstOrDefault(x => x.EventId == model.EventId && x.UserId == userId);
 
         if (existingVolunteer != null && model.IsVolunteering)
@@ -187,7 +353,7 @@ public class EventService : IEventService
         if (eventTicket == null)
             return StandardResponse<bool>.Error("Event ticket not found", HttpStatusCode.NotFound);
 
-        if(model.IsAttending)
+        if (model.IsAttending)
         {
             var newTicket = new Ticket
             {
@@ -201,8 +367,8 @@ public class EventService : IEventService
 
             newTicket = _ticketRepository.CreateAndReturn(newTicket);
         }
-        
-        if(model.IsVolunteering)
+
+        if (model.IsVolunteering)
         {
             var newVolunteer = new EventVolunteer
             {
@@ -239,6 +405,41 @@ public class EventService : IEventService
         var pagedTickets = tickets.ToPagedCollection<Ticket, TicketView>(_options, Link.ToCollection(nameof(EventController.ListUserTickets)));
         return StandardResponse<PagedCollection<TicketView>>.Create(true, "Tickets retrieved successfully", pagedTickets);
     }
+   
+    public async Task<StandardResponse<PagedCollection<SpeakerView>>> ListEventSpeaker(Guid eventId, PagingOptions _options)
+    {
+        var speakers = _speakerRepository.Query().Where(x => x.EventId == eventId).AsQueryable();
+        var pagedSpeakers = speakers.ToPagedCollection<Speaker, SpeakerView>(_options, Link.ToCollection(nameof(EventController.ListEventSpeakers)));
+        return StandardResponse<PagedCollection<SpeakerView>>.Create(true, "Speakers retrieved successfully", pagedSpeakers);
+    }
+
+    public async Task<StandardResponse<PagedCollection<ContactView>>> ListEventContacts(Guid eventId, PagingOptions _options)
+    {
+        var contacts = _contactRepository.Query().Where(x => x.EventId == eventId).AsQueryable();
+        var pagedContacts = contacts.ToPagedCollection<Contact, ContactView>(_options, Link.ToCollection(nameof(EventController.ListEventContacts)));
+        return StandardResponse<PagedCollection<ContactView>>.Create(true, "Contacts retrieved successfully", pagedContacts);
+    }
+
+    public async Task<StandardResponse<PagedCollection<LocationView>>> ListEventLocations(Guid eventId, PagingOptions _options)
+    {
+        var locations = _locationRepository.Query().Where(x => x.EventId == eventId).AsQueryable();
+        var pagedLocations = locations.ToPagedCollection<Location, LocationView>(_options, Link.ToCollection(nameof(EventController.ListEventLocations)));
+        return StandardResponse<PagedCollection<LocationView>>.Create(true, "Locations retrieved successfully", pagedLocations);
+    }
+
+    public async Task<StandardResponse<PagedCollection<ScheduleView>>> ListEventSchedules(Guid eventId, PagingOptions _options)
+    {
+        var schedules = _scheduleRepository.Query().Where(x => x.EventId == eventId).AsQueryable();
+        var pagedSchedules = schedules.ToPagedCollection<Schedule, ScheduleView>(_options, Link.ToCollection(nameof(EventController.ListEventSchedules)));
+        return StandardResponse<PagedCollection<ScheduleView>>.Create(true, "Schedules retrieved successfully", pagedSchedules);
+    }
+
+    public async Task<StandardResponse<PagedCollection<SessionView>>> ListEventSessions(Guid eventId, PagingOptions _options)
+    {
+        var sessions = _sessionRepository.Query().Where(x => x.EventId == eventId).AsQueryable();
+        var pagedSessions = sessions.ToPagedCollection<Session, SessionView>(_options, Link.ToCollection(nameof(EventController.ListEventSessions)));
+        return StandardResponse<PagedCollection<SessionView>>.Create(true, "Sessions retrieved successfully", pagedSessions);
+    }
     // update event details, tickets, order form details
 
 
@@ -247,7 +448,7 @@ public class EventService : IEventService
     {
         if (filterOptions.GroupId.HasValue)
             events = events.Where(x => x.GroupId == filterOptions.GroupId);
-        
+
         if (filterOptions.EventTypeId.HasValue)
             events = events.Where(x => x.EventTypeId == filterOptions.EventTypeId);
 

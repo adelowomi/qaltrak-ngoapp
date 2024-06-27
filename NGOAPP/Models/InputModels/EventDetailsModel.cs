@@ -12,3 +12,13 @@ public class EventDetailsModel
     public List<ScheduleModel> Schedules { get; set; }
     public List<ContactModel> Contacts { get; set; }
 }
+
+
+public class UpdateEventDetailsModel
+{
+    [Required]
+    public Guid EventId { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+}
+
