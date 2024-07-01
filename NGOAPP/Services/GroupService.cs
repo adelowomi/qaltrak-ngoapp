@@ -3,6 +3,7 @@ using AutoMapper;
 using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NGOAPP.Models.IdentityModels;
 
 namespace NGOAPP;
 
@@ -15,7 +16,9 @@ public class GroupService : IGroupService
     private readonly IBaseRepository<GroupUser> _groupUserRepository;
     private readonly IBaseRepository<Event> _eventRepository;
     private readonly IBaseRepository<Ticket> _ticketRepository;
-    public GroupService(IBaseRepository<Group> groupRepository, IHttpContextAccessor httpContextAccessor, IMapper mapper, IBaseRepository<GroupFollow> groupFollowRepository, IBaseRepository<GroupUser> groupUserRepository, IBaseRepository<Event> eventRepository, IBaseRepository<Ticket> ticketRepository)
+    private readonly IPostmarkHelper _postmarkHelper;
+    private readonly IBaseRepository<User> _userRepository;
+    public GroupService(IBaseRepository<Group> groupRepository, IHttpContextAccessor httpContextAccessor, IMapper mapper, IBaseRepository<GroupFollow> groupFollowRepository, IBaseRepository<GroupUser> groupUserRepository, IBaseRepository<Event> eventRepository, IBaseRepository<Ticket> ticketRepository, IPostmarkHelper postmarkHelper, IBaseRepository<User> userRepository)
     {
         _groupRepository = groupRepository;
         _httpContextAccessor = httpContextAccessor;
@@ -24,11 +27,18 @@ public class GroupService : IGroupService
         _groupUserRepository = groupUserRepository;
         _eventRepository = eventRepository;
         _ticketRepository = ticketRepository;
+        _postmarkHelper = postmarkHelper;
+        _userRepository = userRepository;
     }
+
 
     public async Task<StandardResponse<GroupView>> CreateGroup(GroupModel model)
     {
         var loggedInUser = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var thisUser = _userRepository.GetById(loggedInUser);
+
+        if (thisUser == null)
+            return StandardResponse<GroupView>.Error("We can not find the user trying to create this group. Please contact admin.", HttpStatusCode.NotFound);
         var group = model.Adapt<Group>();
         var existingGroup = _groupRepository.Query().FirstOrDefault(x => x.Name.ToLower() == group.Name.ToLower());
 
@@ -37,6 +47,14 @@ public class GroupService : IGroupService
 
         group.UserId = loggedInUser;
         group = _groupRepository.CreateAndReturn(group);
+
+        var templateModel = new Dictionary<string, string>
+        {
+            { "username", thisUser?.FirstName},
+            { "groupName", group.Name }
+        };
+        await _postmarkHelper.SendTemplatedEmail(EmailTemplates.GroupCreatedTemplate, thisUser.Email, templateModel);
+
         var groupView = group.Adapt<GroupView>();
         return StandardResponse<GroupView>.Create(true, "Group created successfully", groupView);
     }
@@ -100,6 +118,11 @@ public class GroupService : IGroupService
     public async Task<StandardResponse<GroupView>> FollowGroup(Guid groupId)
     {
         var loggedInUser = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var thisUser = _userRepository.GetById(loggedInUser);
+
+        if (thisUser == null)
+            return StandardResponse<GroupView>.Error("We can not find the user trying to follow this group. Please contact admin.", HttpStatusCode.NotFound);
+
         var existingGroupFollow = _groupFollowRepository.Query().FirstOrDefault(x => x.GroupId == groupId && x.UserId == loggedInUser);
 
         if (existingGroupFollow != null)
@@ -113,6 +136,14 @@ public class GroupService : IGroupService
 
         groupFollow = _groupFollowRepository.CreateAndReturn(groupFollow);
         var group = _groupRepository.GetById(groupId);
+
+        // send email notification to user
+        var templateModel = new Dictionary<string, string>
+        {
+            { "username", thisUser?.FirstName},
+            { "groupName", group.Name }
+        };
+        await _postmarkHelper.SendTemplatedEmail(EmailTemplates.NewGroupFollowUser, thisUser.Email, templateModel);
         var groupView = group.Adapt<GroupView>();
         return StandardResponse<GroupView>.Create(true, "Group followed successfully", groupView);
     }
@@ -120,6 +151,10 @@ public class GroupService : IGroupService
     public async Task<StandardResponse<GroupView>> UnfollowGroup(Guid groupId)
     {
         var loggedInUser = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var thisUser = _userRepository.GetById(loggedInUser);
+
+        if (thisUser == null)
+            return StandardResponse<GroupView>.Error("We can not find the user trying to unfollow this group. Please contact admin.", HttpStatusCode.NotFound);
         var existingGroupFollow = _groupFollowRepository.Query().FirstOrDefault(x => x.GroupId == groupId && x.UserId == loggedInUser);
 
         if (existingGroupFollow == null)
@@ -127,6 +162,14 @@ public class GroupService : IGroupService
 
         _groupFollowRepository.Delete(existingGroupFollow);
         var group = _groupRepository.GetById(groupId);
+
+        // send email notification to user
+        var templateModel = new Dictionary<string, string>
+        {
+            { "username", thisUser?.FirstName},
+            { "groupName", group.Name }
+        };
+        await _postmarkHelper.SendTemplatedEmail(EmailTemplates.UnfollowGroup, thisUser.Email, templateModel);
         var groupView = group.Adapt<GroupView>();
         return StandardResponse<GroupView>.Create(true, "Group unfollowed successfully", groupView);
     }

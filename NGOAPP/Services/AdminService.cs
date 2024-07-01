@@ -34,6 +34,7 @@ public class AdminService : IAdminService
         _postmarkHelper = postmarkHelper;
     }
 
+
     public async Task<StandardResponse<UserView>> CreateUser(AdminModel model)
     {
         var existingUser = await _userManager.FindByEmailAsync(model.Email);

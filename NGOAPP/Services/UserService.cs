@@ -145,40 +145,40 @@ public class UserService : IUserService
             return StandardResponse<UserView>.Error("User not found");
 
         // update user properties that are different from the model properties
-        if (!string.IsNullOrEmpty(model.FirstName) && model.FirstName.ToLower() != user.FirstName.ToLower())
+        if (!string.IsNullOrEmpty(model.FirstName) && model.FirstName.ToLower() != user.FirstName?.ToLower())
             user.FirstName = model.FirstName;
 
-        if (!string.IsNullOrEmpty(model.LastName) && model.LastName.ToLower() != user.LastName.ToLower())
+        if (!string.IsNullOrEmpty(model.LastName) && model.LastName.ToLower() != user.LastName?.ToLower())
             user.LastName = model.LastName;
 
-        if (!string.IsNullOrEmpty(model.PhoneNumber) && model.PhoneNumber.ToLower() != user.PhoneNumber.ToLower())
+        if (!string.IsNullOrEmpty(model.PhoneNumber) && model.PhoneNumber.ToLower() != user.PhoneNumber?.ToLower())
             user.PhoneNumber = model.PhoneNumber;
 
-        if (!string.IsNullOrEmpty(model.OtherNames) && model.OtherNames.ToLower() != user.OtherNames.ToLower())
+        if (!string.IsNullOrEmpty(model.OtherNames) && model.OtherNames.ToLower() != user.OtherNames?.ToLower())
             user.OtherNames = model.OtherNames;
 
-        if (!string.IsNullOrEmpty(model.Bio) && model.Bio.ToLower() != user.Bio.ToLower())
+        if (!string.IsNullOrEmpty(model.Bio) && model.Bio.ToLower() != user.Bio?.ToLower())
             user.Bio = model.Bio;
 
-        if (!string.IsNullOrEmpty(model.ImageUrl) && model.ImageUrl.ToLower() != user.ImageUrl.ToLower())
+        if (!string.IsNullOrEmpty(model.ImageUrl) && model.ImageUrl.ToLower() != user.ImageUrl?.ToLower())
             user.ImageUrl = model.ImageUrl;
 
-        if (!string.IsNullOrEmpty(model.AddressLine1) && model.AddressLine1.ToLower() != user.AddressLine1.ToLower())
+        if (!string.IsNullOrEmpty(model.AddressLine1) && model.AddressLine1.ToLower() != user.AddressLine1?.ToLower())
             user.AddressLine1 = model.AddressLine1;
 
-        if (!string.IsNullOrEmpty(model.AddressLine2) && model.AddressLine2.ToLower() != user.AddressLine2.ToLower())
+        if (!string.IsNullOrEmpty(model.AddressLine2) && model.AddressLine2.ToLower() != user.AddressLine2?.ToLower())
             user.AddressLine2 = model.AddressLine2;
 
-        if (!string.IsNullOrEmpty(model.City) && model.City.ToLower() != user.City.ToLower())
+        if (!string.IsNullOrEmpty(model.City) && model.City.ToLower() != user.City?.ToLower())
             user.City = model.City;
 
-        if (!string.IsNullOrEmpty(model.StateOrProvince) && model.StateOrProvince.ToLower() != user.StateOrProvince.ToLower())
+        if (!string.IsNullOrEmpty(model.StateOrProvince) && model.StateOrProvince.ToLower() != user.StateOrProvince?.ToLower())
             user.StateOrProvince = model.StateOrProvince;
 
-        if (!string.IsNullOrEmpty(model.Country) && model.Country.ToLower() != user.Country.ToLower())
+        if (!string.IsNullOrEmpty(model.Country) && model.Country.ToLower() != user.Country?.ToLower())
             user.Country = model.Country;
 
-        if (!string.IsNullOrEmpty(model.PostalCode) && model.PostalCode.ToLower() != user.PostalCode.ToLower())
+        if (!string.IsNullOrEmpty(model.PostalCode) && model.PostalCode.ToLower() != user.PostalCode?.ToLower())
             user.PostalCode = model.PostalCode;
 
         var updateResponse = await _userManager.UpdateAsync(user);

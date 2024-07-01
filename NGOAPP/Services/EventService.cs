@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using AutoMapper;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using NGOAPP.Models.IdentityModels;
 
 namespace NGOAPP;
 
@@ -20,8 +21,10 @@ public class EventService : IEventService
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IBaseRepository<EventVolunteer> _eventVolunteerRepository;
+    private readonly IPostmarkHelper _postmarkHelper;
+    private readonly IBaseRepository<User> _userRepository;
 
-    public EventService(IBaseRepository<Event> eventRepository, IBaseRepository<Location> locationRepository, IBaseRepository<Schedule> scheduleRepository, IBaseRepository<Contact> contactRepository, IBaseRepository<Session> sessionRepository, IBaseRepository<Speaker> speakerRepository, IBaseRepository<EventTicket> eventTicketRepository, IMapper mapper, IBaseRepository<Ticket> ticketRepository, IHttpContextAccessor httpContextAccessor, IBaseRepository<EventVolunteer> eventVolunteerRepository)
+    public EventService(IBaseRepository<Event> eventRepository, IBaseRepository<Location> locationRepository, IBaseRepository<Schedule> scheduleRepository, IBaseRepository<Contact> contactRepository, IBaseRepository<Session> sessionRepository, IBaseRepository<Speaker> speakerRepository, IBaseRepository<EventTicket> eventTicketRepository, IMapper mapper, IBaseRepository<Ticket> ticketRepository, IHttpContextAccessor httpContextAccessor, IBaseRepository<EventVolunteer> eventVolunteerRepository, IPostmarkHelper postmarkHelper, IBaseRepository<User> userRepository)
     {
         _eventRepository = eventRepository;
         _locationRepository = locationRepository;
@@ -34,6 +37,8 @@ public class EventService : IEventService
         _ticketRepository = ticketRepository;
         _httpContextAccessor = httpContextAccessor;
         _eventVolunteerRepository = eventVolunteerRepository;
+        _postmarkHelper = postmarkHelper;
+        _userRepository = userRepository;
     }
 
     public async Task<StandardResponse<EventView>> CreateEvent(CreateEventModel model)
@@ -148,7 +153,7 @@ public class EventService : IEventService
                                     }
                                     if (speaker.SpeakerId != null || speaker.SpeakerId != Guid.Empty)
                                     {
-                                        var existingSpeaker = _speakerRepository.Query().Include(x => x.Images).FirstOrDefault(x => x.Id ==(Guid)speaker.SpeakerId);
+                                        var existingSpeaker = _speakerRepository.Query().Include(x => x.Images).FirstOrDefault(x => x.Id == (Guid)speaker.SpeakerId);
                                         if (existingSpeaker == null)
                                             return StandardResponse<bool>.Error("Speaker not found", HttpStatusCode.NotFound);
 
@@ -263,8 +268,14 @@ public class EventService : IEventService
         return StandardResponse<EventView>.Create(true, "Event order form details updated successfully", eventView);
     }
 
+
     public async Task<StandardResponse<EventView>> PublishEvent(PublishEventModel model)
     {
+        var loggedInUserId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var thisUser = _userRepository.GetById(loggedInUserId);
+
+        if (thisUser == null)
+            return StandardResponse<EventView>.Error("User not found", HttpStatusCode.NotFound);
         var existingEvent = _eventRepository.GetById(model.EventId);
         if (existingEvent == null)
             return StandardResponse<EventView>.Error("Event not found", HttpStatusCode.NotFound);
@@ -280,6 +291,19 @@ public class EventService : IEventService
         _eventRepository.Update(existingEvent);
         existingEvent = _eventRepository.Query().Include(x => x.Status).FirstOrDefault(x => x.Id == existingEvent.Id);
         var eventView = _mapper.Map<EventView>(existingEvent);
+
+        if (model.PublishNow)
+        {
+            var templateModel = new Dictionary<string, string>
+            {
+                { "eventName", existingEvent.Title },
+                { "eventDescription", existingEvent.Description },
+                { "eventStartDate", existingEvent.StartDate.ToString() },
+                { "eventEndDate", existingEvent.EndDate.ToString()},
+                { "username", thisUser.FirstName},
+            };
+            await _postmarkHelper.SendTemplatedEmail(EmailTemplates.NewEventPublished, thisUser.Email, templateModel);
+        }
         return StandardResponse<EventView>.Create(true, "Event published successfully", eventView);
     }
 
@@ -335,9 +359,14 @@ public class EventService : IEventService
         return StandardResponse<List<SpeakerView>>.Create(true, "Event speakers retrieved successfully", speakerViews);
     }
 
+
     public async Task<StandardResponse<bool>> RegisterToAttendEventOrVolunteer(EventRegistrationModel model)
     {
         var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId<Guid>();
+        var thisUser = _userRepository.GetById(userId);
+
+        if (thisUser == null)
+            return StandardResponse<bool>.Error("User not found", HttpStatusCode.NotFound);
         var existingTicket = _ticketRepository.Query().FirstOrDefault(x => x.EventId == model.EventId && x.UserId == userId);
 
         if (existingTicket != null && model.IsAttending)
@@ -366,6 +395,19 @@ public class EventService : IEventService
             };
 
             newTicket = _ticketRepository.CreateAndReturn(newTicket);
+
+            if (newTicket != null)
+            {
+                var templateModel = new Dictionary<string, string>
+                {
+                    { "eventName", eventTicket.Event.Title },
+                    { "eventDescription", eventTicket.Event.Description },
+                    { "eventStartDate", eventTicket.Event.StartDate.ToString() },
+                    { "eventEndDate", eventTicket.Event.EndDate.ToString()},
+                    { "username", thisUser.FirstName},
+                };
+                await _postmarkHelper.SendTemplatedEmail(EmailTemplates.EventAttendanceRegistration, thisUser.Email, templateModel);
+            }
         }
 
         if (model.IsVolunteering)
@@ -405,7 +447,7 @@ public class EventService : IEventService
         var pagedTickets = tickets.ToPagedCollection<Ticket, TicketView>(_options, Link.ToCollection(nameof(EventController.ListUserTickets)));
         return StandardResponse<PagedCollection<TicketView>>.Create(true, "Tickets retrieved successfully", pagedTickets);
     }
-   
+
     public async Task<StandardResponse<PagedCollection<SpeakerView>>> ListEventSpeaker(Guid eventId, PagingOptions _options)
     {
         var speakers = _speakerRepository.Query().Where(x => x.EventId == eventId).AsQueryable();
